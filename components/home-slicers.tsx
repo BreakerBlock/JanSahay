@@ -1,31 +1,56 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import type { PublicDataFilters, PublicCategory, PublicPeriod, PublicScope } from '@/lib/public-data-filters';
 
-const periods = ['Last 30 days', 'Last 12 months', 'All time'] as const;
-const scopes = ['All India', 'North', 'West', 'South', 'East'] as const;
-const types = ['All issue types', 'Water', 'Roads', 'Power', 'Health', 'Housing'] as const;
+const periods: { value: PublicPeriod; label: string }[] = [
+  { value: '30d', label: 'Last 30 days' },
+  { value: '12m', label: 'Last 12 months' },
+  { value: 'all', label: 'All time' },
+];
 
-export default function HomeSlicers() {
-  const [period, setPeriod] = useState<(typeof periods)[number]>('Last 12 months');
-  const [scope, setScope] = useState<(typeof scopes)[number]>('All India');
-  const [type, setType] = useState<(typeof types)[number]>('All issue types');
+const scopes: { value: PublicScope; label: string }[] = [
+  { value: 'all', label: 'All India' },
+  { value: 'north', label: 'North' },
+  { value: 'west', label: 'West' },
+  { value: 'south', label: 'South' },
+  { value: 'east', label: 'East' },
+];
 
-  const selection = useMemo(() => `${scope} · ${period} · ${type}`, [period, scope, type]);
+type Props = {
+  filters: PublicDataFilters;
+  categories: { id: string; name: string }[];
+  loading: boolean;
+  onChange: (filters: PublicDataFilters) => void;
+};
+
+export default function HomeSlicers({ filters, categories, loading, onChange }: Props) {
+  const update = <K extends keyof PublicDataFilters>(key: K, value: PublicDataFilters[K]) => {
+    onChange({ ...filters, [key]: value });
+  };
 
   return (
-    <div className="filterbar">
+    <div className="filterbar" aria-label="Filter public grievance statistics">
       <b>Explore public service data</b>
-      <select className="filter" value={scope} onChange={e => setScope(e.target.value as (typeof scopes)[number])}>
-        {scopes.map(option => <option key={option}>{option}</option>)}
-      </select>
-      <select className="filter" value={period} onChange={e => setPeriod(e.target.value as (typeof periods)[number])}>
-        {periods.map(option => <option key={option}>{option}</option>)}
-      </select>
-      <select className="filter" value={type} onChange={e => setType(e.target.value as (typeof types)[number])}>
-        {types.map(option => <option key={option}>{option}</option>)}
-      </select>
-      <span className="muted" style={{ fontSize: 12 }}>{selection}</span>
+      <label className="filter-control">
+        <span>Region</span>
+        <select className="filter" value={filters.scope} onChange={(event) => update('scope', event.target.value as PublicScope)}>
+          {scopes.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+        </select>
+      </label>
+      <label className="filter-control">
+        <span>Period</span>
+        <select className="filter" value={filters.period} onChange={(event) => update('period', event.target.value as PublicPeriod)}>
+          {periods.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+        </select>
+      </label>
+      <label className="filter-control">
+        <span>Issue type</span>
+        <select className="filter" value={filters.category} onChange={(event) => update('category', event.target.value as PublicCategory)}>
+          <option value="all">All issue types</option>
+          {categories.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
+        </select>
+      </label>
+      <span className="filter-status" aria-live="polite">{loading ? 'Updating data…' : 'Database data'}</span>
     </div>
   );
 }

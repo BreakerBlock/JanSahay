@@ -1,14 +1,92 @@
 'use client';
+
 import { useEffect, useState } from 'react';
-type Row = [string,string,string,string,string,string];
-const views = ['ministry','leader','mp','mla','municipality'] as const;
-const labels: Record<(typeof views)[number],string> = { ministry:'By ministry',leader:'By leader',mp:'By MP',mla:'By MLA',municipality:'By municipality' };
-const demo: Record<(typeof views)[number],Row[]> = {
- ministry:[['Ministry of Jal Shakti','Water & sanitation','124,760','91.8%','5.2 days','4.5'],['Ministry of Power','Electricity & lighting','91,882','86.5%','7.4 days','4.2'],['Ministry of Housing & Urban Affairs','Urban services','76,321','79.1%','10.6 days','3.9']],
- leader:[['Public Works Portfolio','Portfolio lead · demo record','41,226','88.9%','6.1 days','4.3'],['Urban Services Portfolio','Portfolio lead · demo record','39,078','86.2%','7.0 days','4.2'],['Public Health Portfolio','Portfolio lead · demo record','29,415','81.7%','9.2 days','4.0']],
- mp:[['North Delhi constituency office','MP service area · demo record','14,802','90.2%','5.9 days','4.4'],['Pune constituency office','MP service area · demo record','12,714','87.6%','7.1 days','4.3'],['Bengaluru Central constituency office','MP service area · demo record','11,665','82.4%','9.3 days','4.1']],
- mla:[['Saket assembly constituency','MLA service area · demo record','5,112','92.6%','4.8 days','4.6'],['Banjara Hills assembly constituency','MLA service area · demo record','4,705','88.1%','6.6 days','4.3'],['Shivajinagar assembly constituency','MLA service area · demo record','4,321','82.7%','8.9 days','4.0']],
- municipality:[['New Delhi Municipal Council','New Delhi','42,610','93.1%','4.5 days','4.6'],['Greater Hyderabad Municipal Corporation','Hyderabad','39,706','89.4%','6.1 days','4.4'],['Pune Municipal Corporation','Pune','31,318','84.7%','8.0 days','4.2']]
+import type { PublicDataFilters } from '@/lib/public-data-filters';
+
+type Row = {
+  name: string;
+  descriptor: string;
+  cases: number;
+  resolvedRate: number;
+  withinSlaRate: number;
+  medianDays: number | null;
+  overdue: number;
 };
-export default function Dashboard(){const [view,setView]=useState<(typeof views)[number]>('ministry');const [rows,setRows]=useState<Row[]>(demo.ministry);const [live,setLive]=useState(false);useEffect(()=>{let alive=true;fetch(`/api/dashboard?view=${view}`).then(r=>r.ok?r.json():Promise.reject()).then(x=>{if(alive){setRows(x.data);setLive(true)}}).catch(()=>{if(alive){setRows(demo[view]);setLive(false)}});return()=>{alive=false}},[view]);return <>
-<div className="tabs">{views.map(v=><button key={v} className={'tab '+(view===v?'active':'')} onClick={()=>setView(v)}>{labels[v]}</button>)}</div><div className="panel"><p className="sub">{live?'Live performance data from the accountability database.':'Illustrative data shown until a Vercel Postgres database is connected.'} Portfolio and representative views measure accountable service areas, not political affiliation or opinion.</p><div className="tablewrap"><table className="table"><thead><tr><th>Rank</th><th>{labels[view].replace('By ','')}</th><th>Cases</th><th>Resolved</th><th>Within SLA</th><th>Median time</th><th>Citizen rating</th></tr></thead><tbody>{rows.map((r,i)=><tr key={r[0]}><td>{String(i+1).padStart(2,'0')}</td><td><b>{r[0]}</b><br/><small>{r[1]}</small></td><td>{r[2]}</td><td className={'rate '+(Number(r[3].slice(0,-1))<80?'low':'')}>{r[3]}</td><td><span className="sla">{r[3]}</span></td><td>{r[4]}</td><td>{r[5]} / 5</td></tr>)}</tbody></table></div></div></>}
+
+const views = ['ministry', 'leader', 'mp', 'mla', 'municipality'] as const;
+const labels: Record<(typeof views)[number], string> = {
+  ministry: 'By ministry',
+  leader: 'By minister',
+  mp: 'By MP',
+  mla: 'By MLA',
+  municipality: 'By municipality',
+};
+const number = new Intl.NumberFormat('en-IN');
+
+export default function Dashboard({ filters }: { filters: PublicDataFilters }) {
+  const [view, setView] = useState<(typeof views)[number]>('ministry');
+  const [rows, setRows] = useState<Row[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const query = new URLSearchParams({ ...filters, view }).toString();
+    setLoading(true);
+    setError('');
+    fetch(`/api/dashboard?${query}`, { signal: controller.signal })
+      .then(async (response) => {
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || 'Performance data could not be loaded.');
+        return payload;
+      })
+      .then((payload) => setRows(payload.data || []))
+      .catch((reason) => {
+        if (reason instanceof Error && reason.name !== 'AbortError') setError(reason.message);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
+  }, [filters, view]);
+
+  return (
+    <>
+      <div className="tabs performance-tabs" aria-label="Accountability view">
+        {views.map((item) => (
+          <button key={item} className={`tab ${view === item ? 'active' : ''}`} onClick={() => setView(item)}>
+            {labels[item]}
+          </button>
+        ))}
+      </div>
+      <div className="panel performance-panel">
+        <div className="performance-note">
+          <p className="sub">Database performance for the selected region, period and issue type. Representative results reflect complaints assigned to their linked authority.</p>
+          {loading && <span className="badge">Updating…</span>}
+        </div>
+        {error && <p className="notice warn">{error}</p>}
+        {!error && !loading && !rows.length && <div className="data-empty">No accountable offices match these filters.</div>}
+        {!!rows.length && (
+          <div className="tablewrap">
+            <table className="table performance-table">
+              <thead><tr><th>Rank</th><th>{labels[view].replace('By ', '')}</th><th>Cases</th><th>Resolved</th><th>Within SLA</th><th>Median resolution</th><th>Overdue</th></tr></thead>
+              <tbody>
+                {rows.map((row, index) => (
+                  <tr key={`${view}-${row.name}`}>
+                    <td data-label="Rank">{String(index + 1).padStart(2, '0')}</td>
+                    <td data-label={labels[view].replace('By ', '')}><b>{row.name}</b><br /><small>{row.descriptor}</small></td>
+                    <td data-label="Cases">{number.format(row.cases)}</td>
+                    <td data-label="Resolved"><span className={row.resolvedRate < 70 ? 'rate low' : 'rate'}>{row.resolvedRate}%</span></td>
+                    <td data-label="Within SLA"><span className="sla">{row.withinSlaRate}%</span></td>
+                    <td data-label="Median resolution">{row.medianDays === null ? '—' : `${row.medianDays} days`}</td>
+                    <td data-label="Overdue"><span className={row.overdue ? 'badge red' : 'badge teal'}>{number.format(row.overdue)}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
