@@ -1,0 +1,90 @@
+.nav {
+  position: relative;
+}
+
+.mobile-nav {
+  display: none;
+  margin-left: auto;
+}
+
+.mobile-menu-button {
+  width: 42px;
+  height: 42px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 5px;
+  border: 1px solid #cbd9e3;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.mobile-menu-button span {
+  display: block;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--navy);
+}
+
+.mobile-menu {
+  position: absolute;
+  z-index: 100;
+  top: 100%;
+  left: 0;
+  right: 0;
+  padding: 10px 16px 16px;
+  background: #fff;
+  border-top: 1px solid #e4edf2;
+  border-bottom: 1px solid #ccdce6;
+  box-shadow: 0 14px 24px #092f4a24;
+}
+
+.mobile-menu a {
+  display: block;
+  padding: 12px 10px;
+  border-radius: 7px;
+  color: #405568;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.mobile-menu a:hover,
+.mobile-menu a.active {
+  background: #eff6f9;
+  color: var(--blue);
+}
+
+.mobile-menu .mobile-portal-link {
+  margin-top: 5px;
+  background: #e6f5f2;
+  color: #00796d;
+  text-align: center;
+  font-weight: 800;
+}
+
+@media (max-width: 850px) {
+  .mobile-nav {
+    display: block;
+  }
+
+  .nav {
+    height: 66px;
+    padding: 0 16px;
+  }
+
+  .brand {
+    font-size: 18px;
+  }
+
+  .brand-mark {
+    width: 32px;
+    height: 32px;
+  }
+
+  .brand small {
+    font-size: 8px;
+  }
+}
