@@ -5,6 +5,7 @@ export async function POST(request: NextRequest) {
   const body = (await request.json()) as HandleUploadBody;
   try {
     const response = await handleUpload({
+      token: process.env.BLOB_READ_WRITE_TOKEN,
       body,
       request,
       onBeforeGenerateToken: async (pathname, clientPayload) => {
@@ -16,6 +17,6 @@ export async function POST(request: NextRequest) {
     });
     return NextResponse.json(response);
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Upload could not be authorized.' }, { status: 400 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Upload could not be authorized. Check BLOB_READ_WRITE_TOKEN and the private Blob store connection.' }, { status: 400 });
   }
 }
