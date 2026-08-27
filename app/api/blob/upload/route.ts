@@ -6,7 +6,6 @@ export async function POST(request: NextRequest) {
   try {
     const response = await handleUpload({
       token: process.env.BLOB_READ_WRITE_TOKEN,
-      callbackUrl: process.env.VERCEL_BLOB_CALLBACK_URL,
       body,
       request,
       onBeforeGenerateToken: async (pathname, clientPayload) => {
