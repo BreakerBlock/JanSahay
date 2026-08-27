@@ -1,0 +1,5 @@
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import './globals.css';
+export const metadata: Metadata = { title: 'JanSahay', description: 'Public service accountability and grievance resolution.' };
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) { return <html lang="en"><body><div className="tri"/><nav className="nav"><Link href="/" className="brand"><span className="brand-mark">✓</span><span>JanSahay<small>PUBLIC GRIEVANCE SERVICE</small></span></Link><div className="nav-links"><Link href="/">Dashboard</Link><Link href="/report">File an issue</Link><Link href="/transparency">Public log</Link><Link href="/rti">RTI guide</Link><Link href="/contacts">Contacts</Link><Link href="/portal" className="portal-link">My portal</Link></div></nav>{children}<footer className="footer"><span>JanSahay · A citizen-first public grievance service</span><span>Open data · Privacy protected · Accessible in every language</span></footer></body></html>; }
