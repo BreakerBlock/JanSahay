@@ -30,7 +30,7 @@ type Snapshot = {
 const initialFilters: PublicDataFilters = { period: 'all', scope: 'all', category: 'all' };
 const issueIcons = Object.fromEntries(grievanceCategories.map((category) => [category.id, category.icon]));
 
-function TrendChart({ rows }: { rows: Snapshot['trend'] }) {
+function TrendChart({ rows, generatedAt, period }: { rows: Snapshot['trend']; generatedAt: string; period: PublicDataFilters['period'] }) {
   const { language, t } = useLanguage();
   const max = Math.max(1, ...rows.flatMap((row) => [row.filed, row.resolved]));
   const point = (key: 'filed' | 'resolved', row: Snapshot['trend'][number], index: number) => {
@@ -46,9 +46,20 @@ function TrendChart({ rows }: { rows: Snapshot['trend'] }) {
     ? rows.map((_, index) => index)
     : Array.from(new Set([0, .25, .5, .75, 1].map((position) => Math.round(position * (rows.length - 1)))));
   const first = rows[0]?.bucket;
-  const last = rows.at(-1)?.bucket;
-  const label = (value?: string) => value ? new Intl.DateTimeFormat(language === 'hi' ? 'hi-IN' : 'en-IN', { month: 'short', year: '2-digit', timeZone: 'UTC' }).format(new Date(value)) : '—';
-  const number = new Intl.NumberFormat(language === 'hi' ? 'hi-IN' : 'en-IN');
+  const locale = language === 'hi' ? 'hi-IN' : 'en-IN';
+  const startLabel = (value?: string) => value ? new Intl.DateTimeFormat(locale, {
+    ...(period === '30d' ? { day: 'numeric' as const } : {}),
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(value)) : '—';
+  const todayLabel = new Intl.DateTimeFormat(locale, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'Asia/Kolkata',
+  }).format(new Date(generatedAt));
+  const number = new Intl.NumberFormat(locale);
 
   if (!rows.length) return <div className="data-empty">{t('No cases match these filters.', 'इन फ़िल्टर से कोई शिकायत नहीं मिली।')}</div>;
 
@@ -82,7 +93,7 @@ function TrendChart({ rows }: { rows: Snapshot['trend'] }) {
       <div className="legend">
         <span><i className="dot" style={{ background: '#d98b32' }} />{t('Filed', 'दर्ज')}</span>
         <span><i className="dot" style={{ background: '#008c7e' }} />{t('Resolved', 'समाधित')}</span>
-        <span style={{ marginLeft: 'auto' }}>{label(first)} — {label(last)}</span>
+        <span className="trend-date-range">{startLabel(first)} — {t('Today', 'आज')} · {todayLabel}</span>
       </div>
     </>
   );
@@ -170,7 +181,7 @@ export default function HomepageDashboard() {
             <article className="panel trend-panel">
               <h3 style={{ margin: 0 }}>{t('Issue volume & resolution trend', 'शिकायत मात्रा और समाधान रुझान')}</h3>
               <p className="sub" style={{ margin: '4px 0 14px' }}>{t('Cases filed and fixes reported in the selected period', 'चुनी अवधि में दर्ज शिकायतें और बताए गए समाधान')}</p>
-              <TrendChart rows={data.trend} />
+              <TrendChart rows={data.trend} generatedAt={data.generatedAt} period={filters.period} />
             </article>
             <article className="panel">
               <h3 style={{ margin: 0 }}>{t('Where issues are concentrated', 'समस्याएँ कहाँ केंद्रित हैं')}</h3>

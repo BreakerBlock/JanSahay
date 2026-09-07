@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import LanguageSelector from './language-selector';
 import MobileNav from './mobile-nav';
@@ -11,7 +12,9 @@ export function SiteHeader() {
     <>
       <nav className="nav">
         <Link href="/" className="brand">
-          <span className="brand-mark" aria-hidden="true">🇮🇳</span>
+          <span className="brand-mark" aria-hidden="true">
+            <Image src="/india-flag.svg" alt="" width={42} height={28} priority />
+          </span>
           <span>JanSahay<small>{t('PUBLIC GRIEVANCE SERVICE', 'जन शिकायत सेवा')}</small></span>
         </Link>
         <div className="nav-links">

@@ -69,9 +69,15 @@
 .trend-data-label.resolved { margin-top:16px;color:#00776b; }
 .trend-data-label.first { transform:translate(0,-50%); }
 .trend-data-label.last { transform:translate(-100%,-50%); }
+.trend-date-range { margin-left:auto;font-weight:700;white-space:nowrap; }
 .compact-data-grid { align-items:start; }
 .show-more { width:100%;margin-top:9px;padding:9px;border-top:1px solid #e4ecf1;background:transparent;color:#086ba6;font-size:11px;font-weight:800;text-align:center; }
 .show-more:hover { background:#f5f9fb; }
+
+@media (max-width: 510px) {
+  .trend-panel .legend { flex-wrap:wrap; }
+  .trend-date-range { width:100%;margin-left:0;padding-top:2px; }
+}
 
 .data-empty {
   min-height: 120px;

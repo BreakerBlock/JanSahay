@@ -1,13 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#ff8f2a" />
-      <stop offset="50%" stop-color="#ffffff" />
-      <stop offset="100%" stop-color="#138a4a" />
-    </linearGradient>
-  </defs>
-  <rect width="64" height="64" rx="14" fill="#0b3554"/>
-  <rect x="8" y="10" width="48" height="44" rx="10" fill="url(#g)" opacity="0.95"/>
-  <circle cx="32" cy="32" r="11" fill="#0b3554"/>
-  <path d="M32 24l2.4 7.4H42l-6 4.4 2.3 7.2-6.3-4.5-6.3 4.5 2.3-7.2-6-4.4h7.6z" fill="#fff"/>
+  <rect width="64" height="64" rx="14" fill="#092f4a"/>
+  <g clip-path="url(#flag-clip)">
+    <rect x="8" y="14" width="48" height="12" fill="#ff9933"/>
+    <rect x="8" y="26" width="48" height="12" fill="#fff"/>
+    <rect x="8" y="38" width="48" height="12" fill="#138808"/>
+  </g>
+  <rect x="8" y="14" width="48" height="36" rx="3" fill="none" stroke="#d8e1e7" stroke-width="1"/>
+  <g fill="none" stroke="#000080" stroke-width=".75">
+    <circle cx="32" cy="32" r="5.5" stroke-width="1.2"/>
+    <path d="M32 26.5v11M26.5 32h11M28.11 28.11l7.78 7.78M35.89 28.11l-7.78 7.78M29.25 27.24l5.5 9.52M36.76 29.25l-9.52 5.5M34.75 27.24l-5.5 9.52M36.76 34.75l-9.52-5.5M30.58 26.69l2.84 10.62M37.31 30.58l-10.62 2.84M33.42 26.69l-2.84 10.62M37.31 33.42l-10.62-2.84"/>
+  </g>
+  <defs><clipPath id="flag-clip"><rect x="8" y="14" width="48" height="36" rx="3"/></clipPath></defs>
 </svg>
