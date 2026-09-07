@@ -1,0 +1,105 @@
+.nav-links {
+  align-items: center;
+  gap: 15px;
+}
+
+.language-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #526576;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.language-selector select {
+  min-height: 34px;
+  padding: 5px 26px 5px 8px;
+  border: 1px solid #cbd9e3;
+  border-radius: 7px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.language-selector.compact > span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.slogan-ticker {
+  overflow: hidden;
+  border-bottom: 1px solid #d6e4eb;
+  background: #fff8e9;
+  color: #713f0d;
+  white-space: nowrap;
+}
+
+.slogan-track {
+  display: inline-flex;
+  min-width: max-content;
+  gap: 52px;
+  padding: 8px 0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .2px;
+  animation: slogan-scroll 30s linear infinite;
+}
+
+@keyframes slogan-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slogan-track { animation: none; padding-left: 18px; }
+}
+
+@media (max-width: 1120px) {
+  .nav-links { gap: 10px; }
+  .nav-links a { font-size: 12px; }
+}
+
+@media (max-width: 850px) {
+  .nav > .nav-links { display: none; }
+}
+
+.aadhaar-marker,
+.routing-preview { display:flex;align-items:center;gap:11px;padding:12px 13px;border:1px solid #b9dfd7;border-radius:9px;background:#effaf7;color:#0a6058; }
+.aadhaar-marker small,
+.routing-preview small { display:block;margin-top:2px;color:#5a736f;font-size:11px;font-weight:500; }
+.aadhaar-check,
+.routing-icon { width:29px;height:29px;display:grid;flex:0 0 auto;place-items:center;border-radius:50%;background:var(--teal);color:#fff;font-weight:900; }
+.demo-pill,
+.sla-chip { margin-left:auto;padding:4px 7px;border-radius:20px;background:#d8f1eb;color:#087367;font-size:9px;font-weight:900;letter-spacing:.6px;white-space:nowrap; }
+.routing-preview { border-color:#cddfed;background:#f1f7fb;color:#174f76; }
+.routing-icon { background:#287aa8; }
+.routing-preview small { color:#607888; }
+.sla-chip { background:#deedf7;color:#185f8c; }
+.form-actions { display:flex;align-items:center;gap:10px;flex-wrap:wrap; }
+
+.mplads-hero { display:flex;align-items:center;justify-content:space-between;gap:30px;background:linear-gradient(135deg,#0a3552,#0c6b6a);color:#fff;padding:30px; }
+.mplads-hero > div { max-width:760px; }
+.mplads-hero h1 { margin:8px 0;font-size:clamp(28px,4vw,42px);line-height:1.08;letter-spacing:-1.1px; }
+.mplads-hero p { margin:0;color:#d7e9ed;line-height:1.55; }
+.mplads-hero .action { flex:0 0 auto;background:#fff;color:#075f67; }
+.data-source-badge { display:inline-block;padding:4px 7px;border-radius:15px;background:#e8f6f2;color:#087367;font-size:9px;font-weight:900;letter-spacing:.5px; }
+.report-link { display:inline-block;margin-top:16px; }
+.source-note { margin-top:14px;padding-top:14px;border-top:1px solid var(--line); }
+.portal-login { display:flex;gap:9px;align-items:flex-end;flex-wrap:wrap; }
+.portal-login label { font-size:12px;font-weight:800; }
+.portal-login input { display:block;margin-top:5px;padding:10px;border:1px solid #cbd9e3;border-radius:7px;min-width:240px; }
+.portal-login .sub { flex:1 1 280px;align-self:flex-end; }
+
+@media (max-width: 510px) {
+  .aadhaar-marker,
+  .routing-preview { align-items:flex-start;flex-wrap:wrap; }
+  .demo-pill,
+  .sla-chip { margin-left:40px; }
+}
+
+@media (max-width: 700px) {
+  .mplads-hero { align-items:flex-start;flex-direction:column;padding:22px; }
+}

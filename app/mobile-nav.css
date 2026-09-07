@@ -65,6 +65,21 @@
   font-weight: 800;
 }
 
+.mobile-language {
+  margin: 8px 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e4edf2;
+}
+
+.mobile-language .language-selector {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.mobile-language select {
+  min-width: 130px;
+}
+
 @media (max-width: 850px) {
   .mobile-nav {
     display: block;

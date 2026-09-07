@@ -42,31 +42,31 @@ export async function GET(request: NextRequest) {
             AND (${category} = 'all' OR c.category_id = ${category})
             AND (
               ${scope} = 'all'
-              OR (${scope} = 'north' AND LEFT(c.pin_code::text, 2)::int BETWEEN 11 AND 19)
-              OR (${scope} = 'west' AND LEFT(c.pin_code::text, 2)::int BETWEEN 36 AND 49)
-              OR (${scope} = 'south' AND LEFT(c.pin_code::text, 2)::int BETWEEN 50 AND 69)
-              OR (${scope} = 'east' AND LEFT(c.pin_code::text, 2)::int BETWEEN 70 AND 85)
+              OR (${scope} = 'north' AND LEFT(c.pin_code::text, 1) IN ('1', '2'))
+              OR (${scope} = 'west' AND LEFT(c.pin_code::text, 1) IN ('3', '4'))
+              OR (${scope} = 'south' AND LEFT(c.pin_code::text, 1) IN ('5', '6'))
+              OR (${scope} = 'east' AND LEFT(c.pin_code::text, 1) IN ('7', '8'))
             )
         )
         SELECT
           a.name,
           initcap(a.jurisdiction_level) || ' jurisdiction' AS descriptor,
-          count(c.id)::int AS cases,
-          count(c.id) FILTER (WHERE c.status IN ('resolved_by_authority', 'confirmed_closed', 'closed'))::int AS resolved,
-          count(c.id) FILTER (WHERE c.resolved_at IS NOT NULL)::int AS resolved_with_timestamp,
-          count(c.id) FILTER (WHERE c.resolved_at IS NOT NULL AND c.resolved_at <= c.sla_due_at)::int AS within_sla,
+          count(DISTINCT c.id)::int AS cases,
+          count(DISTINCT c.id) FILTER (WHERE c.status IN ('resolved_by_authority', 'confirmed_closed', 'closed'))::int AS resolved,
+          count(DISTINCT c.id) FILTER (WHERE c.resolved_at IS NOT NULL)::int AS resolved_with_timestamp,
+          count(DISTINCT c.id) FILTER (WHERE c.resolved_at IS NOT NULL AND c.resolved_at <= c.sla_due_at)::int AS within_sla,
           round((percentile_cont(0.5) WITHIN GROUP (
             ORDER BY EXTRACT(EPOCH FROM (c.resolved_at - c.submitted_at)) / 86400.0
           ) FILTER (WHERE c.resolved_at IS NOT NULL AND c.resolved_at >= c.submitted_at))::numeric, 1)::float8 AS median_days,
-          count(c.id) FILTER (
+          count(DISTINCT c.id) FILTER (
             WHERE c.status NOT IN ('resolved_by_authority', 'confirmed_closed', 'closed') AND c.sla_due_at < now()
           )::int AS overdue
         FROM authorities a
         LEFT JOIN filtered c ON c.assigned_authority_id = a.id
         WHERE a.authority_type = ${type}
-        GROUP BY a.id
-        ORDER BY count(c.id) DESC, a.name
-        LIMIT 25`;
+        GROUP BY a.name, a.jurisdiction_level
+        ORDER BY count(DISTINCT c.id) DESC, a.name
+        LIMIT 100`;
       return NextResponse.json({ data: rows.map(shapeRow) });
     }
 
@@ -79,32 +79,32 @@ export async function GET(request: NextRequest) {
           AND (${category} = 'all' OR c.category_id = ${category})
           AND (
             ${scope} = 'all'
-            OR (${scope} = 'north' AND LEFT(c.pin_code::text, 2)::int BETWEEN 11 AND 19)
-            OR (${scope} = 'west' AND LEFT(c.pin_code::text, 2)::int BETWEEN 36 AND 49)
-            OR (${scope} = 'south' AND LEFT(c.pin_code::text, 2)::int BETWEEN 50 AND 69)
-            OR (${scope} = 'east' AND LEFT(c.pin_code::text, 2)::int BETWEEN 70 AND 85)
+            OR (${scope} = 'north' AND LEFT(c.pin_code::text, 1) IN ('1', '2'))
+            OR (${scope} = 'west' AND LEFT(c.pin_code::text, 1) IN ('3', '4'))
+            OR (${scope} = 'south' AND LEFT(c.pin_code::text, 1) IN ('5', '6'))
+            OR (${scope} = 'east' AND LEFT(c.pin_code::text, 1) IN ('7', '8'))
           )
       )
       SELECT
         r.full_name AS name,
         COALESCE(r.constituency_or_jurisdiction, initcap(r.role)) AS descriptor,
-        count(c.id)::int AS cases,
-        count(c.id) FILTER (WHERE c.status IN ('resolved_by_authority', 'confirmed_closed', 'closed'))::int AS resolved,
-        count(c.id) FILTER (WHERE c.resolved_at IS NOT NULL)::int AS resolved_with_timestamp,
-        count(c.id) FILTER (WHERE c.resolved_at IS NOT NULL AND c.resolved_at <= c.sla_due_at)::int AS within_sla,
+        count(DISTINCT c.id)::int AS cases,
+        count(DISTINCT c.id) FILTER (WHERE c.status IN ('resolved_by_authority', 'confirmed_closed', 'closed'))::int AS resolved,
+        count(DISTINCT c.id) FILTER (WHERE c.resolved_at IS NOT NULL)::int AS resolved_with_timestamp,
+        count(DISTINCT c.id) FILTER (WHERE c.resolved_at IS NOT NULL AND c.resolved_at <= c.sla_due_at)::int AS within_sla,
         round((percentile_cont(0.5) WITHIN GROUP (
           ORDER BY EXTRACT(EPOCH FROM (c.resolved_at - c.submitted_at)) / 86400.0
         ) FILTER (WHERE c.resolved_at IS NOT NULL AND c.resolved_at >= c.submitted_at))::numeric, 1)::float8 AS median_days,
-        count(c.id) FILTER (
+        count(DISTINCT c.id) FILTER (
           WHERE c.status NOT IN ('resolved_by_authority', 'confirmed_closed', 'closed') AND c.sla_due_at < now()
         )::int AS overdue
       FROM representatives r
       LEFT JOIN authorities a ON a.id = r.authority_id
       LEFT JOIN filtered c ON c.assigned_authority_id = a.id
       WHERE r.role = ${role} AND r.active = true
-      GROUP BY r.id
-      ORDER BY count(c.id) DESC, r.full_name
-      LIMIT 25`;
+      GROUP BY r.full_name, r.constituency_or_jurisdiction, r.role
+      ORDER BY count(DISTINCT c.id) DESC, r.full_name
+      LIMIT 100`;
     return NextResponse.json({ data: rows.map(shapeRow) });
   } catch (error) {
     console.error('Performance dashboard query failed', error);

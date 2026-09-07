@@ -1,7 +1,14 @@
 import { readFile } from 'node:fs/promises';
 import { neon } from '@neondatabase/serverless';
-if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required');
-const sql = neon(process.env.DATABASE_URL);
+const databaseUrl = (
+  process.env.DATABASE_URL ||
+  process.env.DATABASE_URL_UNPOOLED ||
+  process.env.POSTGRES_URL ||
+  process.env.POSTGRES_URL_NON_POOLING ||
+  ''
+).trim().replace(/^=/, '');
+if (!/^postgres(?:ql)?:\/\//.test(databaseUrl)) throw new Error('A valid DATABASE_URL or POSTGRES_URL is required.');
+const sql = neon(databaseUrl);
 
 function splitSqlStatements(source) {
   const statements = [];

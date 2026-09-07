@@ -8,10 +8,38 @@ CREATE TABLE IF NOT EXISTS authorities (
 CREATE TABLE IF NOT EXISTS representatives (
  id UUID PRIMARY KEY DEFAULT gen_random_uuid(), full_name TEXT NOT NULL, role TEXT NOT NULL CHECK(role IN ('minister','mp','mla','mayor','municipal_commissioner','responsible_officer')), constituency_or_jurisdiction TEXT, official_email TEXT, official_phone TEXT, office_address TEXT, public_url TEXT, authority_id UUID REFERENCES authorities(id), active BOOLEAN NOT NULL DEFAULT true, created_at TIMESTAMPTZ NOT NULL DEFAULT now());
 CREATE TABLE IF NOT EXISTS service_categories (id TEXT PRIMARY KEY, name TEXT NOT NULL, parent_id TEXT REFERENCES service_categories(id), default_sla_days SMALLINT NOT NULL CHECK(default_sla_days > 0));
+INSERT INTO service_categories (id,name,default_sla_days) VALUES
+ ('water','Water & sanitation',7),
+ ('roads','Roads & public transport',10),
+ ('power','Power & street lighting',3),
+ ('health','Health services',7),
+ ('housing','Housing & urban services',14),
+ ('waste','Waste collection & cleanliness',3),
+ ('pensions','Pensions',21),
+ ('epfo_labour','EPFO & labour',21),
+ ('banking','Banking & financial services',21),
+ ('railways','Railways',14),
+ ('telecom','Telecom & mobile services',14),
+ ('education','Education & scholarships',21),
+ ('police_home','Police, safety & home affairs',14),
+ ('land_revenue','Land, property & revenue',21),
+ ('food_distribution','Ration & food distribution',7),
+ ('social_welfare','Social welfare & benefits',21),
+ ('vehicle_services','Driving licence & vehicle services',14),
+ ('environment','Environment & pollution',14),
+ ('postal','Postal services',14),
+ ('digital_services','Government portals & digital services',10),
+ ('taxation','Taxation & public revenue',21),
+ ('agriculture','Agriculture & farmer services',14),
+ ('consumer','Consumer affairs',21),
+ ('aadhaar_identity','Aadhaar & identity services',21),
+ ('other','Other public service',14)
+ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name,default_sla_days=EXCLUDED.default_sla_days;
 CREATE TABLE IF NOT EXISTS jurisdiction_rules (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), pin_prefix TEXT NOT NULL CHECK(pin_prefix ~ '^[0-9]{1,6}$'), category_id TEXT REFERENCES service_categories(id), authority_id UUID NOT NULL REFERENCES authorities(id), priority SMALLINT NOT NULL DEFAULT 100, UNIQUE(pin_prefix,category_id,priority));
 CREATE TABLE IF NOT EXISTS complaints (
  id UUID PRIMARY KEY DEFAULT gen_random_uuid(), public_id TEXT UNIQUE NOT NULL, reporter_access_hash TEXT NOT NULL, reporter_email TEXT NOT NULL, title TEXT NOT NULL CHECK(char_length(title) BETWEEN 5 AND 180), description TEXT NOT NULL CHECK(char_length(description) BETWEEN 20 AND 5000), category_id TEXT NOT NULL REFERENCES service_categories(id), pin_code CHAR(6) NOT NULL CHECK(pin_code ~ '^[0-9]{6}$'), latitude NUMERIC(9,6), longitude NUMERIC(9,6), location_precision_m SMALLINT, public_geohash TEXT, contact_phone TEXT, assigned_authority_id UUID REFERENCES authorities(id), status complaint_status NOT NULL DEFAULT 'submitted', sla_due_at TIMESTAMPTZ, submitted_at TIMESTAMPTZ NOT NULL DEFAULT now(), resolved_at TIMESTAMPTZ, closed_at TIMESTAMPTZ, CHECK((latitude IS NULL AND longitude IS NULL) OR (latitude BETWEEN -90 AND 90 AND longitude BETWEEN -180 AND 180)));
 CREATE INDEX IF NOT EXISTS complaints_public_log_idx ON complaints(status,submitted_at DESC); CREATE INDEX IF NOT EXISTS complaints_geo_idx ON complaints(public_geohash,category_id,submitted_at DESC); CREATE INDEX IF NOT EXISTS complaints_authority_idx ON complaints(assigned_authority_id,status);
+CREATE INDEX IF NOT EXISTS complaints_snapshot_idx ON complaints(submitted_at DESC,category_id,pin_code); CREATE INDEX IF NOT EXISTS representatives_performance_idx ON representatives(role,active,authority_id);
 CREATE TABLE IF NOT EXISTS attachments (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), complaint_id UUID NOT NULL REFERENCES complaints(id) ON DELETE CASCADE, blob_url TEXT NOT NULL, blob_pathname TEXT NOT NULL, content_type TEXT NOT NULL, byte_size INTEGER NOT NULL CHECK(byte_size > 0), original_filename TEXT NOT NULL, visibility TEXT NOT NULL DEFAULT 'private' CHECK(visibility IN ('private','authority_only','public_redacted')), uploaded_by participant_role NOT NULL DEFAULT 'reporter', uploaded_at TIMESTAMPTZ NOT NULL DEFAULT now());
 CREATE TABLE IF NOT EXISTS complaint_events (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), complaint_id UUID NOT NULL REFERENCES complaints(id) ON DELETE CASCADE, event_type event_type NOT NULL, actor_role participant_role NOT NULL, actor_representative_id UUID REFERENCES representatives(id), public_note TEXT, private_note TEXT, metadata JSONB NOT NULL DEFAULT '{}', created_at TIMESTAMPTZ NOT NULL DEFAULT now());
 CREATE INDEX IF NOT EXISTS complaint_events_log_idx ON complaint_events(complaint_id,created_at ASC);

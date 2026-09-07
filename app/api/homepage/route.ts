@@ -32,10 +32,10 @@ export async function GET(request: NextRequest) {
             AND (${category} = 'all' OR c.category_id = ${category})
             AND (
               ${scope} = 'all'
-              OR (${scope} = 'north' AND LEFT(c.pin_code::text, 2)::int BETWEEN 11 AND 19)
-              OR (${scope} = 'west' AND LEFT(c.pin_code::text, 2)::int BETWEEN 36 AND 49)
-              OR (${scope} = 'south' AND LEFT(c.pin_code::text, 2)::int BETWEEN 50 AND 69)
-              OR (${scope} = 'east' AND LEFT(c.pin_code::text, 2)::int BETWEEN 70 AND 85)
+              OR (${scope} = 'north' AND LEFT(c.pin_code::text, 1) IN ('1', '2'))
+              OR (${scope} = 'west' AND LEFT(c.pin_code::text, 1) IN ('3', '4'))
+              OR (${scope} = 'south' AND LEFT(c.pin_code::text, 1) IN ('5', '6'))
+              OR (${scope} = 'east' AND LEFT(c.pin_code::text, 1) IN ('7', '8'))
             )
         )
         SELECT
@@ -61,10 +61,10 @@ export async function GET(request: NextRequest) {
             AND (${category} = 'all' OR c.category_id = ${category})
             AND (
               ${scope} = 'all'
-              OR (${scope} = 'north' AND LEFT(c.pin_code::text, 2)::int BETWEEN 11 AND 19)
-              OR (${scope} = 'west' AND LEFT(c.pin_code::text, 2)::int BETWEEN 36 AND 49)
-              OR (${scope} = 'south' AND LEFT(c.pin_code::text, 2)::int BETWEEN 50 AND 69)
-              OR (${scope} = 'east' AND LEFT(c.pin_code::text, 2)::int BETWEEN 70 AND 85)
+              OR (${scope} = 'north' AND LEFT(c.pin_code::text, 1) IN ('1', '2'))
+              OR (${scope} = 'west' AND LEFT(c.pin_code::text, 1) IN ('3', '4'))
+              OR (${scope} = 'south' AND LEFT(c.pin_code::text, 1) IN ('5', '6'))
+              OR (${scope} = 'east' AND LEFT(c.pin_code::text, 1) IN ('7', '8'))
             )
           GROUP BY 1
           UNION ALL
@@ -75,10 +75,10 @@ export async function GET(request: NextRequest) {
             AND (${category} = 'all' OR c.category_id = ${category})
             AND (
               ${scope} = 'all'
-              OR (${scope} = 'north' AND LEFT(c.pin_code::text, 2)::int BETWEEN 11 AND 19)
-              OR (${scope} = 'west' AND LEFT(c.pin_code::text, 2)::int BETWEEN 36 AND 49)
-              OR (${scope} = 'south' AND LEFT(c.pin_code::text, 2)::int BETWEEN 50 AND 69)
-              OR (${scope} = 'east' AND LEFT(c.pin_code::text, 2)::int BETWEEN 70 AND 85)
+              OR (${scope} = 'north' AND LEFT(c.pin_code::text, 1) IN ('1', '2'))
+              OR (${scope} = 'west' AND LEFT(c.pin_code::text, 1) IN ('3', '4'))
+              OR (${scope} = 'south' AND LEFT(c.pin_code::text, 1) IN ('5', '6'))
+              OR (${scope} = 'east' AND LEFT(c.pin_code::text, 1) IN ('7', '8'))
             )
           GROUP BY 1
         )
@@ -93,10 +93,10 @@ export async function GET(request: NextRequest) {
           AND (${category} = 'all' OR c.category_id = ${category})
           AND (
             ${scope} = 'all'
-            OR (${scope} = 'north' AND LEFT(c.pin_code::text, 2)::int BETWEEN 11 AND 19)
-            OR (${scope} = 'west' AND LEFT(c.pin_code::text, 2)::int BETWEEN 36 AND 49)
-            OR (${scope} = 'south' AND LEFT(c.pin_code::text, 2)::int BETWEEN 50 AND 69)
-            OR (${scope} = 'east' AND LEFT(c.pin_code::text, 2)::int BETWEEN 70 AND 85)
+            OR (${scope} = 'north' AND LEFT(c.pin_code::text, 1) IN ('1', '2'))
+            OR (${scope} = 'west' AND LEFT(c.pin_code::text, 1) IN ('3', '4'))
+            OR (${scope} = 'south' AND LEFT(c.pin_code::text, 1) IN ('5', '6'))
+            OR (${scope} = 'east' AND LEFT(c.pin_code::text, 1) IN ('7', '8'))
           )
         GROUP BY 1
         HAVING count(*) >= 5
@@ -110,10 +110,10 @@ export async function GET(request: NextRequest) {
           AND (${category} = 'all' OR c.category_id = ${category})
           AND (
             ${scope} = 'all'
-            OR (${scope} = 'north' AND LEFT(c.pin_code::text, 2)::int BETWEEN 11 AND 19)
-            OR (${scope} = 'west' AND LEFT(c.pin_code::text, 2)::int BETWEEN 36 AND 49)
-            OR (${scope} = 'south' AND LEFT(c.pin_code::text, 2)::int BETWEEN 50 AND 69)
-            OR (${scope} = 'east' AND LEFT(c.pin_code::text, 2)::int BETWEEN 70 AND 85)
+            OR (${scope} = 'north' AND LEFT(c.pin_code::text, 1) IN ('1', '2'))
+            OR (${scope} = 'west' AND LEFT(c.pin_code::text, 1) IN ('3', '4'))
+            OR (${scope} = 'south' AND LEFT(c.pin_code::text, 1) IN ('5', '6'))
+            OR (${scope} = 'east' AND LEFT(c.pin_code::text, 1) IN ('7', '8'))
           )
         GROUP BY sc.id, sc.name
         ORDER BY complaints DESC, sc.name`,
@@ -132,10 +132,10 @@ export async function GET(request: NextRequest) {
           AND (${category} = 'all' OR c.category_id = ${category})
           AND (
             ${scope} = 'all'
-            OR (${scope} = 'north' AND LEFT(c.pin_code::text, 2)::int BETWEEN 11 AND 19)
-            OR (${scope} = 'west' AND LEFT(c.pin_code::text, 2)::int BETWEEN 36 AND 49)
-            OR (${scope} = 'south' AND LEFT(c.pin_code::text, 2)::int BETWEEN 50 AND 69)
-            OR (${scope} = 'east' AND LEFT(c.pin_code::text, 2)::int BETWEEN 70 AND 85)
+            OR (${scope} = 'north' AND LEFT(c.pin_code::text, 1) IN ('1', '2'))
+            OR (${scope} = 'west' AND LEFT(c.pin_code::text, 1) IN ('3', '4'))
+            OR (${scope} = 'south' AND LEFT(c.pin_code::text, 1) IN ('5', '6'))
+            OR (${scope} = 'east' AND LEFT(c.pin_code::text, 1) IN ('7', '8'))
           )
         GROUP BY sc.id, sc.name
         ORDER BY overdue DESC, complaints DESC

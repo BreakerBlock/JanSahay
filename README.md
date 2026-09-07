@@ -2,10 +2,12 @@
 
 JanSahay is a Next.js platform for citizen grievances and public-service accountability. It provides:
 
-- complaint filing, PIN- and category-based routing, exact coordinate capture and private photo uploads;
+- bilingual English/Hindi navigation and workflows, with a persistent language selector;
+- complaint filing, provisional PIN/category auto-routing with a live preview, exact coordinate capture and private photo uploads;
+- 25 broad grievance categories informed by current CPGRAMS/DARPG service-delivery themes;
 - citizen confirmation of a reported fix or a public dispute of that fix;
 - a responsible-person queue for marking work completed;
-- citizen, responsible-person, public-log, contacts and RTI explainer pages;
+- citizen, responsible-person, public-log, contacts, RTI and official MPLADS finance-link pages;
 - accountable performance views by ministry, leader/portfolio, MP, MLA and municipality;
 - a privacy-safe public CSV export.
 
@@ -26,7 +28,19 @@ JanSahay is a Next.js platform for citizen grievances and public-service account
 
 7. Deploy from the Vercel dashboard or push to your configured production branch.
 
-The schema seed creates common service categories and a small routing example. Import your approved authority directory and PIN-to-authority routing rules before public launch.
+The migration creates all 25 service categories. The large demo seed adds provisional PIN/category routing rules. Import an approved responsibility matrix before public launch.
+
+## Large showcase dataset
+
+After applying the schema, run the demo seeder once against the connected Neon database:
+
+```bash
+DATABASE_URL='YOUR_NEON_DATABASE_URL' DEMO_COMPLAINT_COUNT=6000 npm run db:seed-demo
+```
+
+The seeder creates or updates 6,000 synthetic complaints across 18 ministries, 22 municipalities, 26 fictional MP records and 32 fictional MLA records. It also creates varied resolved, overdue, escalated and disputed workflows across all 25 categories. Representative names and contact addresses are explicitly marked as demo data.
+
+The script is safe to rerun: complaint IDs use the `JAN-DEMO-` prefix and are updated instead of duplicated. It rebuilds only the events and disputes attached to those synthetic complaints; citizen-filed complaints are not modified.
 
 ## Why Neon + Vercel Blob
 

@@ -3,18 +3,21 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-
-const links = [
-  ['/', 'Dashboard'],
-  ['/report', 'File an issue'],
-  ['/transparency', 'Public log'],
-  ['/rti', 'RTI guide'],
-  ['/contacts', 'Contacts'],
-] as const;
+import LanguageSelector from './language-selector';
+import { useLanguage } from './language-provider';
 
 export default function MobileNav() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const { t } = useLanguage();
+  const links = [
+    ['/', t('Dashboard', 'डैशबोर्ड')],
+    ['/report', t('File an issue', 'शिकायत दर्ज करें')],
+    ['/transparency', t('Public log', 'सार्वजनिक रिकॉर्ड')],
+    ['/mplads', 'MPLADS'],
+    ['/rti', t('RTI guide', 'RTI मार्गदर्शिका')],
+    ['/contacts', t('Contacts', 'संपर्क')],
+  ] as const;
 
   useEffect(() => setOpen(false), [pathname]);
 
@@ -32,7 +35,7 @@ export default function MobileNav() {
       <button
         type="button"
         className="mobile-menu-button"
-        aria-label={open ? 'Close navigation menu' : 'Open navigation menu'}
+        aria-label={open ? t('Close navigation menu', 'नेविगेशन मेन्यू बंद करें') : t('Open navigation menu', 'नेविगेशन मेन्यू खोलें')}
         aria-expanded={open}
         aria-controls="mobile-navigation"
         onClick={() => setOpen((current) => !current)}
@@ -48,8 +51,9 @@ export default function MobileNav() {
               {label}
             </Link>
           ))}
+          <div className="mobile-language"><LanguageSelector /></div>
           <Link href="/portal" className="mobile-portal-link" onClick={() => setOpen(false)}>
-            My portal
+            {t('My portal', 'मेरा पोर्टल')}
           </Link>
         </div>
       )}

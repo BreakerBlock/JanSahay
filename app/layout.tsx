@@ -1,8 +1,11 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import MobileNav from '../components/mobile-nav';
+import { LanguageProvider } from '@/components/language-provider';
+import { SiteFooter, SiteHeader } from '@/components/site-chrome';
 import './globals.css';
 import './homepage.css';
 import './mobile-nav.css';
+import './site-chrome.css';
 export const metadata: Metadata = { title: 'JanSahay', description: 'Public service accountability and grievance resolution.', icons: { icon: '/icon.svg', apple: '/icon.svg' } };
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) { return <html lang="en"><body><div className="tri"/><nav className="nav"><Link href="/" className="brand"><span className="brand-mark">🇮🇳</span><span>JanSahay<small>PUBLIC GRIEVANCE SERVICE</small></span></Link><div className="nav-links"><Link href="/">Dashboard</Link><Link href="/report">File an issue</Link><Link href="/transparency">Public log</Link><Link href="/rti">RTI guide</Link><Link href="/contacts">Contacts</Link><Link href="/portal" className="portal-link">My portal</Link></div><MobileNav /></nav>{children}<footer className="footer"><span>JanSahay · A citizen-first public grievance service</span><span>Open data · Privacy protected · Accessible in every language</span></footer></body></html>; }
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  return <html lang="en"><body><LanguageProvider><div className="tri"/><SiteHeader />{children}<SiteFooter /></LanguageProvider></body></html>;
+}
