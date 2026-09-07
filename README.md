@@ -7,9 +7,10 @@ JanSahay is a Next.js platform for citizen grievances and public-service account
 - 25 broad grievance categories informed by current CPGRAMS/DARPG service-delivery themes;
 - citizen confirmation of a reported fix or a public dispute of that fix;
 - a responsible-person queue for marking work completed;
-- citizen, responsible-person, public-log, contacts, RTI and official MPLADS finance-link pages;
+- citizen, responsible-person, public-log, contacts and RTI explainer pages;
 - accountable performance views by ministry, leader/portfolio, MP, MLA and municipality;
 - a privacy-safe public CSV export.
+- low-write aggregate upvote/downvote counters plus PIN-prefix and category filters in the public log.
 
 ## Deploy from GitHub to Vercel
 
@@ -54,7 +55,7 @@ This system intentionally uses multiple relational tables. See [`db/schema.sql`]
 
 | Table | Purpose |
 | --- | --- |
-| `complaints` | The current case state, routing, private exact location and service due date. |
+| `complaints` | The current case state, routing, private exact location, service due date and two aggregate reaction counters. |
 | `complaint_events` | Append-only, public/private case timeline and audit history. |
 | `disputes` | A separate, reviewable record of a reporter contesting a claimed fix. |
 | `attachments` | Private Blob object metadata; no image bytes live in Postgres. |
@@ -65,6 +66,8 @@ This system intentionally uses multiple relational tables. See [`db/schema.sql`]
 | `public_contact_publications` | Verified source URL and review date for each published official contact. |
 
 `public_complaint_log` is a database view that excludes private fields by design. The downloadable CSV is generated only from that view.
+
+Public reactions deliberately use two integer counters on each complaint, not a voter-history table. This keeps the demo to one atomic database update per click. Browser-local state discourages repeat voting in the showcase, but production should add authenticated or rate-limited vote integrity controls.
 
 ## Location and concentration privacy model
 

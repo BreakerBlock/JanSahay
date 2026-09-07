@@ -143,7 +143,7 @@ export async function GET(request: NextRequest) {
           )
         GROUP BY sc.id, sc.name
         ORDER BY overdue DESC, complaints DESC
-        LIMIT 6`,
+        LIMIT 25`,
       sql`SELECT id, name FROM service_categories ORDER BY name`,
     ]);
 

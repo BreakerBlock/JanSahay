@@ -1,0 +1,35 @@
+.public-log-filters {
+  display: grid;
+  grid-template-columns: minmax(180px, .7fr) minmax(210px, 1fr) auto auto max-content;
+  align-items: end;
+  gap: 10px;
+  margin: 15px 0;
+  padding: 13px;
+  border: 1px solid #dce7ed;
+  border-radius: 9px;
+  background: #f7fafb;
+}
+
+.public-log-filters label { display:flex;flex-direction:column;gap:4px; }
+.public-log-filters label > span { color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase; }
+.public-log-filters input,
+.public-log-filters select { min-height:39px;padding:8px 10px;border:1px solid #cbd9e3;border-radius:7px;background:#fff;color:var(--ink); }
+.public-log-filters .action { min-height:39px; }
+.filter-result { align-self:center;color:var(--muted);font-size:11px;font-weight:700;white-space:nowrap; }
+.public-log-table { min-width:980px; }
+.vote-controls { display:flex;gap:5px;white-space:nowrap; }
+.vote-controls button { min-width:47px;padding:5px 7px;border:1px solid #d4e0e7;border-radius:7px;background:#f7fafb;color:#637789;font-size:10px;font-weight:900; }
+.vote-controls button span { margin-left:3px; }
+.vote-controls button.selected.up { border-color:#8ed4c7;background:#e4f6f1;color:#00796d; }
+.vote-controls button.selected.down { border-color:#efb4ad;background:#fff0ee;color:#b7413c; }
+.reaction-note { margin-top:12px;padding-top:12px;border-top:1px solid #edf2f5; }
+
+@media (max-width: 850px) {
+  .public-log-filters { grid-template-columns:1fr 1fr; }
+  .filter-result { justify-self:start; }
+}
+
+@media (max-width: 510px) {
+  .public-log-filters { grid-template-columns:1fr; }
+  .public-log-filters .action { width:100%;text-align:center; }
+}

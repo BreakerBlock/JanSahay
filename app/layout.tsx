@@ -5,6 +5,7 @@ import './globals.css';
 import './homepage.css';
 import './mobile-nav.css';
 import './site-chrome.css';
+import './public-log.css';
 export const metadata: Metadata = { title: 'JanSahay', description: 'Public service accountability and grievance resolution.', icons: { icon: '/icon.svg', apple: '/icon.svg' } };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return <html lang="en"><body><LanguageProvider><div className="tri"/><SiteHeader />{children}<SiteFooter /></LanguageProvider></body></html>;

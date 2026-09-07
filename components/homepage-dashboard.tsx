@@ -69,6 +69,8 @@ export default function HomepageDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
+  const [showAllIssues, setShowAllIssues] = useState(false);
+  const [showAllPressure, setShowAllPressure] = useState(false);
 
   useEffect(() => {
     const refresh = () => setRefreshKey((current) => current + 1);
@@ -138,7 +140,7 @@ export default function HomepageDashboard() {
           </section>
 
           <section className="section grid two">
-            <article className="panel">
+            <article className="panel trend-panel">
               <h3 style={{ margin: 0 }}>{t('Issue volume & resolution trend', 'शिकायत मात्रा और समाधान रुझान')}</h3>
               <p className="sub" style={{ margin: '4px 0 14px' }}>{t('Cases filed and fixes reported in the selected period', 'चुनी अवधि में दर्ज शिकायतें और बताए गए समाधान')}</p>
               <TrendChart rows={data.trend} />
@@ -161,12 +163,12 @@ export default function HomepageDashboard() {
             </article>
           </section>
 
-          <section className="section grid two">
+          <section className="section grid two compact-data-grid">
             <article className="panel">
               <h3 style={{ margin: 0 }}>{t('What is affecting people most', 'लोगों को सबसे अधिक क्या प्रभावित कर रहा है')}</h3>
               <p className="sub" style={{ margin: '4px 0 10px' }}>{t('Issue share within the selected data', 'चुने डेटा में समस्या का हिस्सा')}</p>
               <div className="issue-mix-list">
-                {data.issueMix.map((row) => (
+                {(showAllIssues ? data.issueMix : data.issueMix.slice(0, 5)).map((row) => (
                   <div className="issue" key={row.id}>
                     <span className="ico">{issueIcons[row.id] || '📌'}</span>
                     <span><b>{categoryName(row.id, row.name)}</b><p>{number.format(row.complaints)} {t('grievances', 'शिकायतें')}</p></span>
@@ -175,12 +177,13 @@ export default function HomepageDashboard() {
                 ))}
                 {!data.issueMix.length && <div className="data-empty">{t('No issues match these filters.', 'इन फ़िल्टर से कोई समस्या नहीं मिली।')}</div>}
               </div>
+              {data.issueMix.length > 5 && <button className="show-more" type="button" onClick={() => setShowAllIssues((current) => !current)}>{showAllIssues ? t('Show less ↑', 'कम दिखाएँ ↑') : t(`Show ${data.issueMix.length - 5} more ↓`, `${data.issueMix.length - 5} और दिखाएँ ↓`)}</button>}
             </article>
             <article className="panel">
               <h3 style={{ margin: 0 }}>{t('Service pressure by issue type', 'समस्या प्रकार के अनुसार सेवा दबाव')}</h3>
               <p className="sub" style={{ margin: '4px 0 10px' }}>{t('Overdue workload and resolution performance', 'विलंबित कार्यभार और समाधान प्रदर्शन')}</p>
               <div className="pressure-list">
-                {data.categoryPressure.map((row) => (
+                {(showAllPressure ? data.categoryPressure : data.categoryPressure.slice(0, 5)).map((row) => (
                   <div className="pressure-row" key={row.id}>
                     <div><b>{categoryName(row.id, row.name)}</b><small>{number.format(row.complaints)} {t('cases', 'शिकायतें')}</small></div>
                     <div><span>{t('Resolved', 'समाधित')}</span><strong>{row.resolutionRate}%</strong></div>
@@ -189,6 +192,7 @@ export default function HomepageDashboard() {
                 ))}
                 {!data.categoryPressure.length && <div className="data-empty">{t('No service-pressure data matches these filters.', 'इन फ़िल्टर से कोई सेवा-दबाव डेटा नहीं मिला।')}</div>}
               </div>
+              {data.categoryPressure.length > 5 && <button className="show-more" type="button" onClick={() => setShowAllPressure((current) => !current)}>{showAllPressure ? t('Show less ↑', 'कम दिखाएँ ↑') : t(`Show ${data.categoryPressure.length - 5} more ↓`, `${data.categoryPressure.length - 5} और दिखाएँ ↓`)}</button>}
             </article>
           </section>
 
