@@ -34,7 +34,7 @@ function TrendChart({ rows }: { rows: Snapshot['trend'] }) {
   const { language, t } = useLanguage();
   const max = Math.max(1, ...rows.flatMap((row) => [row.filed, row.resolved]));
   const point = (key: 'filed' | 'resolved', row: Snapshot['trend'][number], index: number) => {
-    const x = rows.length === 1 ? 300 : (index / Math.max(rows.length - 1, 1)) * 600;
+    const x = rows.length === 1 ? 300 : 12 + (index / Math.max(rows.length - 1, 1)) * 576;
     const y = 155 - (row[key] / max) * 135;
     return { x, y };
   };
@@ -62,15 +62,22 @@ function TrendChart({ rows }: { rows: Snapshot['trend'] }) {
             const row = rows[index];
             const filed = point('filed', row, index);
             const resolved = point('resolved', row, index);
-            const anchor = index === 0 ? 'start' : index === rows.length - 1 ? 'end' : 'middle';
             return <g key={row.bucket}>
               <circle className="trend-point" cx={filed.x} cy={filed.y} r="3.5" fill="#d98b32"><title>{t('Filed', 'दर्ज')}: {number.format(row.filed)}</title></circle>
-              <text className="trend-value filed" x={filed.x} y={Math.max(11, filed.y - 8)} textAnchor={anchor}>{number.format(row.filed)}</text>
               <circle className="trend-point" cx={resolved.x} cy={resolved.y} r="3.5" fill="#008c7e"><title>{t('Resolved', 'समाधित')}: {number.format(row.resolved)}</title></circle>
-              <text className="trend-value resolved" x={resolved.x} y={Math.min(164, resolved.y + 14)} textAnchor={anchor}>{number.format(row.resolved)}</text>
             </g>;
           })}
         </svg>
+        <div className="trend-label-layer" aria-hidden="true">
+          {labelIndexes.flatMap((index) => {
+            const row = rows[index];
+            const alignment = index === 0 ? 'first' : index === rows.length - 1 ? 'last' : 'middle';
+            return (['filed', 'resolved'] as const).map((key) => {
+              const value = point(key, row, index);
+              return <span key={`${row.bucket}-${key}`} className={`trend-data-label ${key} ${alignment}`} style={{ left: `${(value.x / 600) * 100}%`, top: `${(value.y / 170) * 100}%` }}>{number.format(row[key])}</span>;
+            });
+          })}
+        </div>
       </div>
       <div className="legend">
         <span><i className="dot" style={{ background: '#d98b32' }} />{t('Filed', 'दर्ज')}</span>
