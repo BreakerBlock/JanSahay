@@ -7,14 +7,14 @@ import { useLanguage } from './language-provider';
 type Vote = 'up' | 'down' | null;
 type Row = { public_id:string;title:string;category:string;status:string;public_geohash:string|null;submitted_at:string;resolved_at:string|null;assigned_authority:string|null;has_dispute:boolean;upvotes:number;downvotes:number };
 type Dispute = { public_id:string;title:string;public_note:string;created_at:string };
-type Filters = { pin:string;category:string };
+type Filters = { requestNo:string;pin:string;category:string };
 
 export default function PublicLog() {
   const { language,t } = useLanguage();
   const [rows,setRows] = useState<Row[]>([]);
   const [disputes,setDisputes] = useState<Dispute[]>([]);
-  const [draft,setDraft] = useState<Filters>({pin:'',category:'all'});
-  const [filters,setFilters] = useState<Filters>({pin:'',category:'all'});
+  const [draft,setDraft] = useState<Filters>({requestNo:'',pin:'',category:'all'});
+  const [filters,setFilters] = useState<Filters>({requestNo:'',pin:'',category:'all'});
   const [votes,setVotes] = useState<Record<string,Vote>>({});
   const [notice,setNotice] = useState(t('Loading public log…','सार्वजनिक रिकॉर्ड लोड हो रहा है…'));
   const [loading,setLoading] = useState(true);
@@ -42,8 +42,8 @@ export default function PublicLog() {
   const status=(value:string)=>({submitted:t('submitted','दर्ज'),acknowledged:t('assigned','आवंटित'),in_progress:t('in progress','कार्य जारी'),resolved_by_authority:t('fix reported','समाधान दर्ज'),confirmed_closed:t('closed','बंद'),closed:t('closed','बंद'),disputed:t('disputed','विवादित'),escalated:t('escalated','उच्च स्तर पर भेजी गई')}[value]||value.replaceAll('_',' '));
   const exportUrl=useMemo(()=>`/api/export/complaints?${new URLSearchParams(filters).toString()}`,[filters]);
 
-  function applyFilters(event:FormEvent){event.preventDefault();setFilters({pin:draft.pin.replace(/\D/g,'').slice(0,6),category:draft.category})}
-  function clearFilters(){const empty={pin:'',category:'all'};setDraft(empty);setFilters(empty)}
+  function applyFilters(event:FormEvent){event.preventDefault();setFilters({requestNo:draft.requestNo.trim().toUpperCase().replace(/[^A-Z0-9-]/g,'').slice(0,40),pin:draft.pin.replace(/\D/g,'').slice(0,6),category:draft.category})}
+  function clearFilters(){const empty={requestNo:'',pin:'',category:'all'};setDraft(empty);setFilters(empty)}
 
   async function vote(publicId:string,next:'up'|'down') {
     const previous=votes[publicId]||null;
@@ -61,6 +61,7 @@ export default function PublicLog() {
     <div className="panel public-register">
       <div className="head"><div><h2 style={{fontSize:18}}>{t('Complaint register','शिकायत रजिस्टर')}</h2><p>{t('Names, contacts, exact location and evidence are excluded.','नाम, संपर्क, सटीक स्थान और साक्ष्य शामिल नहीं हैं।')}</p></div><a href={exportUrl} className="action secondary">{t('Download filtered CSV','फ़िल्टर किया CSV डाउनलोड करें')}</a></div>
       <form className="public-log-filters" onSubmit={applyFilters}>
+        <label><span>{t('Request number','अनुरोध संख्या')}</span><input type="search" value={draft.requestNo} onChange={event=>setDraft(current=>({...current,requestNo:event.target.value.toUpperCase().replace(/[^A-Z0-9-]/g,'').slice(0,40)}))} placeholder="e.g. JNS-2026-A1B2C3" maxLength={40}/></label>
         <label><span>{t('PIN code or prefix','पिन कोड या शुरुआती अंक')}</span><input value={draft.pin} onChange={event=>setDraft(current=>({...current,pin:event.target.value.replace(/\D/g,'').slice(0,6)}))} inputMode="numeric" placeholder={t('e.g. 110 or 110001','जैसे 110 या 110001')} maxLength={6}/></label>
         <label><span>{t('Category','श्रेणी')}</span><select value={draft.category} onChange={event=>setDraft(current=>({...current,category:event.target.value}))}><option value="all">{t('All categories','सभी श्रेणियाँ')}</option>{grievanceCategories.map(category=><option value={category.id} key={category.id}>{language==='hi'?category.nameHi:category.name}</option>)}</select></label>
         <button className="action" disabled={loading}>{loading?t('Loading…','लोड हो रहा है…'):t('Apply filters','फ़िल्टर लगाएँ')}</button>

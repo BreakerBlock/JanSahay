@@ -3,14 +3,14 @@
 JanSahay is a Next.js platform for citizen grievances and public-service accountability. It provides:
 
 - bilingual English/Hindi navigation and workflows, with a persistent language selector;
-- complaint filing, provisional PIN/category auto-routing with a live preview, exact coordinate capture and private photo uploads;
+- complaint filing, provisional PIN/category auto-routing with a live preview, browser geolocation or OpenStreetMap pin selection, and private photo uploads;
 - 25 broad grievance categories informed by current CPGRAMS/DARPG service-delivery themes;
 - citizen confirmation of a reported fix or a public dispute of that fix;
 - a responsible-person queue for marking work completed;
 - citizen, responsible-person, public-log, contacts and RTI explainer pages;
 - accountable performance views by ministry, leader/portfolio, MP, MLA and municipality;
 - a privacy-safe public CSV export.
-- low-write aggregate upvote/downvote counters plus PIN-prefix and category filters in the public log.
+- low-write aggregate upvote/downvote counters plus request-number, PIN-prefix and category filters in the public log.
 
 ## Deploy from GitHub to Vercel
 
@@ -72,6 +72,8 @@ Public reactions deliberately use two integer counters on each complaint, not a 
 ## Location and concentration privacy model
 
 Exact latitude/longitude is stored privately to route and investigate a case. A separate, rounded ~1 km area cell is used in public aggregate views. Cells with fewer than five reports are suppressed. Do not publish exact coordinates, attachments, identity details, or low-volume cells.
+
+The optional map picker uses public OpenStreetMap tiles and needs no API key. For high-volume production use, select a tile provider and usage plan that matches expected traffic rather than relying on the community tile service at scale.
 
 ## Before a public launch
 

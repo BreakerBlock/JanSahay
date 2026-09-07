@@ -14,6 +14,8 @@ export async function GET(request: NextRequest) {
   const category = requestedCategory === 'all' || grievanceCategoryIds.has(requestedCategory) ? requestedCategory : 'all';
   const requestedPin = (params.get('pin') || '').trim();
   const pinPrefix = /^\d{1,6}$/.test(requestedPin) ? requestedPin : '';
+  const requestedNumber = (params.get('requestNo') || '').trim().toUpperCase();
+  const requestNo = /^[A-Z0-9-]{1,40}$/.test(requestedNumber) ? requestedNumber : '';
 
   const rows = await sql`
     SELECT c.public_id,c.title,sc.name AS category,c.status,c.public_geohash,c.submitted_at,
@@ -25,6 +27,7 @@ export async function GET(request: NextRequest) {
     LEFT JOIN disputes d ON d.complaint_id=c.id
     WHERE (${category}='all' OR c.category_id=${category})
       AND (${pinPrefix}='' OR c.pin_code::text LIKE ${pinPrefix + '%'})
+      AND (${requestNo}='' OR UPPER(c.public_id) LIKE ${requestNo + '%'})
     ORDER BY c.submitted_at DESC
     LIMIT 50 OFFSET ${page * 50}`;
 
@@ -35,8 +38,8 @@ export async function GET(request: NextRequest) {
     WHERE e.event_type='reporter_disputed'
       AND (${category}='all' OR c.category_id=${category})
       AND (${pinPrefix}='' OR c.pin_code::text LIKE ${pinPrefix + '%'})
+      AND (${requestNo}='' OR UPPER(c.public_id) LIKE ${requestNo + '%'})
     ORDER BY e.created_at DESC LIMIT 25`;
 
-  return NextResponse.json({ rows, disputes, page, filters: { category, pin: pinPrefix } }, { headers: noStore });
+  return NextResponse.json({ rows, disputes, page, filters: { requestNo, category, pin: pinPrefix } }, { headers: noStore });
 }
-
