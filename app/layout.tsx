@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Analytics } from '@vercel/analytics/next';
 import { LanguageProvider } from '@/components/language-provider';
 import { SiteFooter, SiteHeader } from '@/components/site-chrome';
 import './globals.css';
@@ -7,5 +8,5 @@ import './mobile-nav.css';
 import './site-chrome.css';
 export const metadata: Metadata = { title: 'JanSahay', description: 'Public service accountability and grievance resolution.', icons: { icon: '/icon.svg', apple: '/icon.svg' } };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body><LanguageProvider><div className="tri"/><SiteHeader />{children}<SiteFooter /></LanguageProvider></body></html>;
+  return <html lang="en"><body><LanguageProvider><div className="tri"/><SiteHeader />{children}<SiteFooter /></LanguageProvider><Analytics /></body></html>;
 }
