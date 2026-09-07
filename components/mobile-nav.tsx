@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 import LanguageSelector from './language-selector';
 import { useLanguage } from './language-provider';
 
+const MPLADS_DASHBOARD = 'https://mplads.gov.in/MPLADS/Dashboard/DashBoard.aspx';
+
 export default function MobileNav() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -14,7 +16,7 @@ export default function MobileNav() {
     ['/', t('Dashboard', 'डैशबोर्ड')],
     ['/report', t('File an issue', 'शिकायत दर्ज करें')],
     ['/transparency', t('Public log', 'सार्वजनिक रिकॉर्ड')],
-    ['/mplads', 'MPLADS'],
+    [MPLADS_DASHBOARD, 'MPLADS'],
     ['/rti', t('RTI guide', 'RTI मार्गदर्शिका')],
     ['/contacts', t('Contacts', 'संपर्क')],
   ] as const;
@@ -47,9 +49,9 @@ export default function MobileNav() {
       {open && (
         <div id="mobile-navigation" className="mobile-menu">
           {links.map(([href, label]) => (
-            <Link key={href} href={href} className={pathname === href ? 'active' : undefined} onClick={() => setOpen(false)}>
-              {label}
-            </Link>
+            href === MPLADS_DASHBOARD
+              ? <a key={href} href={href} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}>{label} ↗</a>
+              : <Link key={href} href={href} className={pathname === href ? 'active' : undefined} onClick={() => setOpen(false)}>{label}</Link>
           ))}
           <div className="mobile-language"><LanguageSelector /></div>
           <Link href="/portal" className="mobile-portal-link" onClick={() => setOpen(false)}>

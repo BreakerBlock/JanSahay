@@ -5,6 +5,8 @@ import LanguageSelector from './language-selector';
 import MobileNav from './mobile-nav';
 import { useLanguage } from './language-provider';
 
+const MPLADS_DASHBOARD = 'https://mplads.gov.in/MPLADS/Dashboard/DashBoard.aspx';
+
 export function SiteHeader() {
   const { t } = useLanguage();
   return (
@@ -18,7 +20,7 @@ export function SiteHeader() {
           <Link href="/">{t('Dashboard', 'डैशबोर्ड')}</Link>
           <Link href="/report">{t('File an issue', 'शिकायत दर्ज करें')}</Link>
           <Link href="/transparency">{t('Public log', 'सार्वजनिक रिकॉर्ड')}</Link>
-          <Link href="/mplads">MPLADS</Link>
+          <a href={MPLADS_DASHBOARD} target="_blank" rel="noopener noreferrer">MPLADS ↗</a>
           <Link href="/rti">{t('RTI guide', 'RTI मार्गदर्शिका')}</Link>
           <Link href="/contacts">{t('Contacts', 'संपर्क')}</Link>
           <LanguageSelector compact />

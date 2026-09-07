@@ -27,7 +27,7 @@ type Snapshot = {
   privacy: string;
 };
 
-const initialFilters: PublicDataFilters = { period: '12m', scope: 'all', category: 'all' };
+const initialFilters: PublicDataFilters = { period: 'all', scope: 'all', category: 'all' };
 const issueIcons = Object.fromEntries(grievanceCategories.map((category) => [category.id, category.icon]));
 
 function TrendChart({ rows }: { rows: Snapshot['trend'] }) {
@@ -68,13 +68,24 @@ export default function HomepageDashboard() {
   const [categories, setCategories] = useState<Snapshot['categories']>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    const refresh = () => setRefreshKey((current) => current + 1);
+    const interval = window.setInterval(refresh, 30_000);
+    window.addEventListener('focus', refresh);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener('focus', refresh);
+    };
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
     const query = new URLSearchParams(filters).toString();
     setLoading(true);
     setError('');
-    fetch(`/api/homepage?${query}`, { signal: controller.signal })
+    fetch(`/api/homepage?${query}&refresh=${refreshKey}`, { signal: controller.signal, cache: 'no-store' })
       .then(async (response) => {
         const payload = await response.json();
         if (!response.ok) throw new Error(payload.error || t('Statistics could not be loaded.', 'आंकड़े लोड नहीं हो सके।'));
@@ -91,7 +102,7 @@ export default function HomepageDashboard() {
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [filters, t]);
+  }, [filters, refreshKey, t]);
 
   const updated = useMemo(() => data?.generatedAt
     ? new Intl.DateTimeFormat(language === 'hi' ? 'hi-IN' : 'en-IN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(data.generatedAt))
@@ -115,7 +126,7 @@ export default function HomepageDashboard() {
                 <h2>{t('National grievance snapshot', 'राष्ट्रीय शिकायत परिदृश्य')}</h2>
                 <p>{t('Live aggregates from submitted grievances · Updated', 'दर्ज शिकायतों का लाइव समेकित डेटा · अपडेट')} {updated}</p>
               </div>
-              <Link href="/transparency" className="link">{t('View public log →', 'सार्वजनिक रिकॉर्ड देखें →')}</Link>
+              <div className="snapshot-actions"><button type="button" className="refresh-data" onClick={() => setRefreshKey((current) => current + 1)} disabled={loading}>↻ {t('Refresh data', 'डेटा रीफ़्रेश करें')}</button><Link href="/transparency" className="link">{t('View public log →', 'सार्वजनिक रिकॉर्ड देखें →')}</Link></div>
             </div>
             <div className="kpis">
               <div className="kpi"><span>{t('Grievances received', 'प्राप्त शिकायतें')}</span><b>{number.format(data.kpis.received)}</b><span>{t('matching current filters', 'वर्तमान फ़िल्टर के अनुसार')}</span></div>
@@ -189,7 +200,7 @@ export default function HomepageDashboard() {
               </div>
               <Link href="/contacts" className="link">{t('Official contacts →', 'आधिकारिक संपर्क →')}</Link>
             </div>
-            <Dashboard filters={filters} />
+            <Dashboard filters={filters} refreshToken={refreshKey} />
           </section>
         </div>
       )}

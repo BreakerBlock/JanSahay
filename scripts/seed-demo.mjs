@@ -368,8 +368,7 @@ function createComplaint(index) {
   const location = authority.locationIndex === null ? locations[integer(0, locations.length - 1)] : locations[authority.locationIndex];
 
   const statusRoll = random();
-  const status = statusRoll < 0.12 ? 'submitted'
-    : statusRoll < 0.20 ? 'acknowledged'
+  const status = statusRoll < 0.20 ? 'acknowledged'
       : statusRoll < 0.35 ? 'in_progress'
         : statusRoll < 0.50 ? 'resolved_by_authority'
           : statusRoll < 0.72 ? 'confirmed_closed'

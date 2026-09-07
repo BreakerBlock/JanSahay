@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { hasDatabase, sql } from '@/lib/db';
 import { parsePublicDataFilters, periodStart } from '@/lib/public-data-filters';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+const noStore = { 'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0' };
+
 const areaNames: Record<string, string> = {
   '110': 'Delhi',
   '400': 'Mumbai',
@@ -14,7 +18,7 @@ const areaNames: Record<string, string> = {
 
 export async function GET(request: NextRequest) {
   if (!hasDatabase()) {
-    return NextResponse.json({ error: 'Database is not connected.' }, { status: 503 });
+    return NextResponse.json({ error: 'Database is not connected.' }, { status: 503, headers: noStore });
   }
 
   const filters = parsePublicDataFilters(new URL(request.url).searchParams);
@@ -191,9 +195,9 @@ export async function GET(request: NextRequest) {
       }),
       categories: categoryRows.map((row) => ({ id: String(row.id), name: String(row.name) })),
       privacy: 'PIN regions are aggregated to three digits and suppressed below five reports.',
-    });
+    }, { headers: noStore });
   } catch (error) {
     console.error('Homepage data query failed', error);
-    return NextResponse.json({ error: 'Public statistics are temporarily unavailable.' }, { status: 500 });
+    return NextResponse.json({ error: 'Public statistics are temporarily unavailable.' }, { status: 500, headers: noStore });
   }
 }

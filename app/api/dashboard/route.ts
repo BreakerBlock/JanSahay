@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { hasDatabase, sql } from '@/lib/db';
 import { parsePublicDataFilters, periodStart } from '@/lib/public-data-filters';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+const noStore = { 'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0' };
+
 const targets = new Set(['ministry', 'leader', 'mp', 'mla', 'municipality']);
 
 function shapeRow(row: Record<string, unknown>) {
@@ -21,11 +25,11 @@ function shapeRow(row: Record<string, unknown>) {
 }
 
 export async function GET(request: NextRequest) {
-  if (!hasDatabase()) return NextResponse.json({ error: 'Database is not connected.' }, { status: 503 });
+  if (!hasDatabase()) return NextResponse.json({ error: 'Database is not connected.' }, { status: 503, headers: noStore });
 
   const searchParams = new URL(request.url).searchParams;
   const view = searchParams.get('view') || 'ministry';
-  if (!targets.has(view)) return NextResponse.json({ error: 'Unsupported view.' }, { status: 422 });
+  if (!targets.has(view)) return NextResponse.json({ error: 'Unsupported view.' }, { status: 422, headers: noStore });
 
   const filters = parsePublicDataFilters(searchParams);
   const start = periodStart(filters.period);
@@ -67,7 +71,7 @@ export async function GET(request: NextRequest) {
         GROUP BY a.name, a.jurisdiction_level
         ORDER BY count(DISTINCT c.id) DESC, a.name
         LIMIT 100`;
-      return NextResponse.json({ data: rows.map(shapeRow) });
+      return NextResponse.json({ data: rows.map(shapeRow) }, { headers: noStore });
     }
 
     const role = view === 'leader' ? 'minister' : view;
@@ -105,9 +109,9 @@ export async function GET(request: NextRequest) {
       GROUP BY r.full_name, r.constituency_or_jurisdiction, r.role
       ORDER BY count(DISTINCT c.id) DESC, r.full_name
       LIMIT 100`;
-    return NextResponse.json({ data: rows.map(shapeRow) });
+    return NextResponse.json({ data: rows.map(shapeRow) }, { headers: noStore });
   } catch (error) {
     console.error('Performance dashboard query failed', error);
-    return NextResponse.json({ error: 'Performance data is temporarily unavailable.' }, { status: 500 });
+    return NextResponse.json({ error: 'Performance data is temporarily unavailable.' }, { status: 500, headers: noStore });
   }
 }

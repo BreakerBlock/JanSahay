@@ -8,7 +8,7 @@ type Row = { name: string; descriptor: string; cases: number; resolvedRate: numb
 type SortKey = 'cases' | 'resolvedRate' | 'withinSlaRate' | 'medianDays' | 'overdue' | 'name';
 const views = ['ministry', 'leader', 'mp', 'mla', 'municipality'] as const;
 
-export default function Dashboard({ filters }: { filters: PublicDataFilters }) {
+export default function Dashboard({ filters, refreshToken = 0 }: { filters: PublicDataFilters; refreshToken?: number }) {
   const { language, t } = useLanguage();
   const [view, setView] = useState<(typeof views)[number]>('ministry');
   const [rows, setRows] = useState<Row[]>([]);
@@ -27,13 +27,13 @@ export default function Dashboard({ filters }: { filters: PublicDataFilters }) {
     const controller = new AbortController();
     const query = new URLSearchParams({ ...filters, view }).toString();
     setLoading(true); setError('');
-    fetch(`/api/dashboard?${query}`, { signal: controller.signal })
+    fetch(`/api/dashboard?${query}&refresh=${refreshToken}`, { signal: controller.signal, cache: 'no-store' })
       .then(async (response) => { const payload = await response.json(); if (!response.ok) throw new Error(payload.error || 'Performance data could not be loaded.'); return payload; })
       .then((payload) => setRows(payload.data || []))
       .catch((reason) => { if (reason instanceof Error && reason.name !== 'AbortError') setError(reason.message); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
-  }, [filters, view]);
+  }, [filters, view, refreshToken]);
 
   const visibleRows = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
