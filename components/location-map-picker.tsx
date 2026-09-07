@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import type { CircleMarker, Map as LeafletMap } from 'leaflet';
+import { useEffect, useId, useRef, useState } from 'react';
+import { useLanguage } from './language-provider';
 
 type Props = {
   latitude: string;
@@ -10,6 +10,28 @@ type Props = {
   instruction: string;
   selectedLabel: string;
 };
+
+type SelectedPlace = {
+  lat?: string | number;
+  lng?: string | number;
+};
+
+type MapObject = {
+  on: (event: string, callback: () => void) => void;
+  remove: () => void;
+};
+
+type PickerObject = {
+  remove?: () => void;
+  setLocation?: (location: { lat: number; lng: number }) => void;
+};
+
+type MapplsRuntime = {
+  maps: { Map: (options: { id: string; properties: Record<string, unknown> }) => MapObject };
+  plugins: { placePicker: (options: Record<string, unknown>, callback: (response: { data?: SelectedPlace } | SelectedPlace) => void) => PickerObject };
+};
+
+let runtimePromise: Promise<MapplsRuntime> | null = null;
 
 function coordinates(latitude: string, longitude: string) {
   if (!latitude.trim() || !longitude.trim()) return null;
@@ -20,68 +42,111 @@ function coordinates(latitude: string, longitude: string) {
     : null;
 }
 
+function loadMappls(token: string): Promise<MapplsRuntime> {
+  if (!runtimePromise) {
+    const pending = import('mappls-web-maps').then(({ mappls, mappls_plugin }) => new Promise<MapplsRuntime>((resolve, reject) => {
+      const maps = new mappls();
+      const plugins = new mappls_plugin();
+      const timeout = window.setTimeout(() => reject(new Error('Map service did not finish loading.')), 15000);
+      maps.initialize(token, { map: true, version: '3.0', plugins: ['placePicker', 'search'] }, () => {
+        window.clearTimeout(timeout);
+        resolve({ maps, plugins });
+      });
+    })).catch((error) => {
+      runtimePromise = null;
+      throw error;
+    });
+    runtimePromise = pending;
+    return pending;
+  }
+  return runtimePromise;
+}
+
 export default function LocationMapPicker({ latitude, longitude, onSelect, instruction, selectedLabel }: Props) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<LeafletMap | null>(null);
-  const markerRef = useRef<CircleMarker | null>(null);
-  const leafletRef = useRef<typeof import('leaflet') | null>(null);
+  const { t } = useLanguage();
+  const mapId = `jansahay-map-${useId().replaceAll(':', '')}`;
+  const mapRef = useRef<MapObject | null>(null);
+  const pickerRef = useRef<PickerObject | null>(null);
   const onSelectRef = useRef(onSelect);
+  const coordinatesRef = useRef(coordinates(latitude, longitude));
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<'' | 'config' | 'load'>('');
+  const token = process.env.NEXT_PUBLIC_MAPPLS_TOKEN?.trim() || '';
 
   useEffect(() => { onSelectRef.current = onSelect; }, [onSelect]);
+  useEffect(() => { coordinatesRef.current = coordinates(latitude, longitude); }, [latitude, longitude]);
 
   useEffect(() => {
+    if (!token) {
+      setLoading(false);
+      setError('config');
+      return;
+    }
     let disposed = false;
-    import('leaflet').then((L) => {
-      if (disposed || !containerRef.current || mapRef.current) return;
-      leafletRef.current = L;
-      const selected = coordinates(latitude, longitude);
-      const map = L.map(containerRef.current, { scrollWheelZoom: false, zoomControl: true })
-        .setView(selected ? [selected.lat, selected.lng] : [22.9734, 78.6569], selected ? 14 : 5);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors',
-      }).addTo(map);
-      if (selected) {
-        markerRef.current = L.circleMarker([selected.lat, selected.lng], {
-          radius: 9, color: '#ffffff', weight: 3, fillColor: '#086ba6', fillOpacity: 1,
-        }).addTo(map);
-      }
-      map.on('click', (event) => onSelectRef.current(event.latlng.lat.toFixed(6), event.latlng.lng.toFixed(6)));
+    loadMappls(token).then(({ maps, plugins }) => {
+      if (disposed) return;
+      const selected = coordinatesRef.current;
+      const map = maps.Map({
+        id: mapId,
+        properties: {
+          center: selected ? [selected.lat, selected.lng] : [22.9734, 78.6569],
+          zoom: selected ? 15 : 4,
+          minZoom: 3,
+          maxZoom: 20,
+        },
+      });
       mapRef.current = map;
-      window.setTimeout(() => map.invalidateSize(), 0);
+      map.on('load', () => {
+        if (disposed) return;
+        const current = coordinatesRef.current;
+        pickerRef.current = plugins.placePicker({
+          map,
+          ...(current ? { location: current } : {}),
+          search: true,
+          geolocation: true,
+          region: 'IND',
+          closeBtn: false,
+          topText: instruction,
+          searchChars: 2,
+        }, (response) => {
+          const candidate = response as SelectedPlace & { data?: SelectedPlace };
+          const place = candidate.data ?? candidate;
+          if (!place) return;
+          const selectedPlace = coordinates(String(place.lat ?? ''), String(place.lng ?? ''));
+          if (!selectedPlace) return;
+          onSelectRef.current(selectedPlace.lat.toFixed(6), selectedPlace.lng.toFixed(6));
+        });
+        setLoading(false);
+      });
+    }).catch(() => {
+      if (!disposed) {
+        setLoading(false);
+        setError('load');
+      }
     });
     return () => {
       disposed = true;
+      pickerRef.current?.remove?.();
+      pickerRef.current = null;
       mapRef.current?.remove();
       mapRef.current = null;
-      markerRef.current = null;
-      leafletRef.current = null;
     };
-  }, []); // The picker is deliberately initialised once when opened.
+  }, [instruction, mapId, token]);
 
   useEffect(() => {
-    const map = mapRef.current;
-    const L = leafletRef.current;
-    if (!map || !L) return;
     const selected = coordinates(latitude, longitude);
-    if (!selected) {
-      if (markerRef.current) map.removeLayer(markerRef.current);
-      markerRef.current = null;
-      return;
-    }
-    if (markerRef.current) markerRef.current.setLatLng([selected.lat, selected.lng]);
-    else markerRef.current = L.circleMarker([selected.lat, selected.lng], {
-      radius: 9, color: '#ffffff', weight: 3, fillColor: '#086ba6', fillOpacity: 1,
-    }).addTo(map);
-    map.panTo([selected.lat, selected.lng]);
+    if (selected) pickerRef.current?.setLocation?.(selected);
   }, [latitude, longitude]);
 
   const selected = coordinates(latitude, longitude);
   return (
     <div className="location-map-shell">
-      <div className="location-map" ref={containerRef} role="application" aria-label={instruction} />
+      <div id={mapId} className="location-map" aria-label={instruction} />
+      {loading && <div className="map-state" role="status">{t('Loading India map and location search…', 'भारत का मानचित्र और स्थान खोज लोड हो रही है…')}</div>}
+      {error === 'config' && <div className="map-state map-error" role="alert">{t('Mappls is not configured. Add NEXT_PUBLIC_MAPPLS_TOKEN in Vercel and redeploy.', 'Mappls कॉन्फ़िगर नहीं है। Vercel में NEXT_PUBLIC_MAPPLS_TOKEN जोड़कर पुनः डिप्लॉय करें।')}</div>}
+      {error === 'load' && <div className="map-state map-error" role="alert">{t('The India map could not be loaded. Check the Mappls key and its allowed domains.', 'भारत का मानचित्र लोड नहीं हुआ। Mappls कुंजी और अनुमत डोमेन जाँचें।')}</div>}
       <div className="map-caption">
-        <span>{instruction}</span>
+        <span>{instruction} {t('Search for a place or PIN code to jump closer, then fine-tune the pin.', 'पास जाने के लिए स्थान या पिन कोड खोजें, फिर पिन को सटीक जगह पर रखें।')}</span>
         {selected && <b>{selectedLabel}: {selected.lat.toFixed(6)}, {selected.lng.toFixed(6)}</b>}
       </div>
     </div>

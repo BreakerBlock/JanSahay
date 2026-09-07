@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { LanguageProvider } from '@/components/language-provider';
 import { SiteFooter, SiteHeader } from '@/components/site-chrome';
-import 'leaflet/dist/leaflet.css';
 import './globals.css';
 import './homepage.css';
 import './mobile-nav.css';

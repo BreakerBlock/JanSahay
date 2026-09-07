@@ -33,14 +33,22 @@ const issueIcons = Object.fromEntries(grievanceCategories.map((category) => [cat
 function TrendChart({ rows }: { rows: Snapshot['trend'] }) {
   const { language, t } = useLanguage();
   const max = Math.max(1, ...rows.flatMap((row) => [row.filed, row.resolved]));
-  const points = (key: 'filed' | 'resolved') => rows.map((row, index) => {
+  const point = (key: 'filed' | 'resolved', row: Snapshot['trend'][number], index: number) => {
     const x = rows.length === 1 ? 300 : (index / Math.max(rows.length - 1, 1)) * 600;
     const y = 155 - (row[key] / max) * 135;
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
+    return { x, y };
+  };
+  const points = (key: 'filed' | 'resolved') => rows.map((row, index) => {
+    const value = point(key, row, index);
+    return `${value.x.toFixed(1)},${value.y.toFixed(1)}`;
   }).join(' ');
+  const labelIndexes = rows.length <= 5
+    ? rows.map((_, index) => index)
+    : Array.from(new Set([0, .25, .5, .75, 1].map((position) => Math.round(position * (rows.length - 1)))));
   const first = rows[0]?.bucket;
   const last = rows.at(-1)?.bucket;
   const label = (value?: string) => value ? new Intl.DateTimeFormat(language === 'hi' ? 'hi-IN' : 'en-IN', { month: 'short', year: '2-digit', timeZone: 'UTC' }).format(new Date(value)) : '—';
+  const number = new Intl.NumberFormat(language === 'hi' ? 'hi-IN' : 'en-IN');
 
   if (!rows.length) return <div className="data-empty">{t('No cases match these filters.', 'इन फ़िल्टर से कोई शिकायत नहीं मिली।')}</div>;
 
@@ -50,6 +58,18 @@ function TrendChart({ rows }: { rows: Snapshot['trend'] }) {
         <svg viewBox="0 0 600 170" preserveAspectRatio="none">
           <polyline points={points('filed')} fill="none" stroke="#d98b32" strokeWidth="4" vectorEffect="non-scaling-stroke" />
           <polyline points={points('resolved')} fill="none" stroke="#008c7e" strokeWidth="4" vectorEffect="non-scaling-stroke" />
+          {labelIndexes.map((index) => {
+            const row = rows[index];
+            const filed = point('filed', row, index);
+            const resolved = point('resolved', row, index);
+            const anchor = index === 0 ? 'start' : index === rows.length - 1 ? 'end' : 'middle';
+            return <g key={row.bucket}>
+              <circle className="trend-point" cx={filed.x} cy={filed.y} r="3.5" fill="#d98b32"><title>{t('Filed', 'दर्ज')}: {number.format(row.filed)}</title></circle>
+              <text className="trend-value filed" x={filed.x} y={Math.max(11, filed.y - 8)} textAnchor={anchor}>{number.format(row.filed)}</text>
+              <circle className="trend-point" cx={resolved.x} cy={resolved.y} r="3.5" fill="#008c7e"><title>{t('Resolved', 'समाधित')}: {number.format(row.resolved)}</title></circle>
+              <text className="trend-value resolved" x={resolved.x} y={Math.min(164, resolved.y + 14)} textAnchor={anchor}>{number.format(row.resolved)}</text>
+            </g>;
+          })}
         </svg>
       </div>
       <div className="legend">

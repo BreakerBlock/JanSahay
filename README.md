@@ -3,7 +3,7 @@
 JanSahay is a Next.js platform for citizen grievances and public-service accountability. It provides:
 
 - bilingual English/Hindi navigation and workflows, with a persistent language selector;
-- complaint filing, provisional PIN/category auto-routing with a live preview, browser geolocation or OpenStreetMap pin selection, and private photo uploads;
+- complaint filing, provisional PIN/category auto-routing with a live preview, browser geolocation or Mappls India place selection, and private photo uploads;
 - 25 broad grievance categories informed by current CPGRAMS/DARPG service-delivery themes;
 - citizen confirmation of a reported fix or a public dispute of that fix;
 - a responsible-person queue for marking work completed;
@@ -19,7 +19,8 @@ JanSahay is a Next.js platform for citizen grievances and public-service account
 3. In **Storage**, install the [Neon Postgres integration](https://vercel.com/marketplace/neon/neon) and connect it to this project. Vercel adds `DATABASE_URL` to the project environment.
 4. In **Storage**, create a **private** Vercel Blob store and connect it to the project. Vercel adds `BLOB_READ_WRITE_TOKEN`.
 5. Add a long random `RESPONDER_PORTAL_KEY` in Vercel Project Settings → Environment Variables. This is only for the demo responsible-person portal; do not put it in client code or Git.
-6. Pull the configured environment locally and run the schema once:
+6. Create a Mappls Web key with Maps, Place Picker and Search enabled. Restrict it to your production and preview domains, then add it to Vercel as `NEXT_PUBLIC_MAPPLS_TOKEN` for Production and Preview.
+7. Pull the configured environment locally and run the schema once:
 
    ```bash
    npm install
@@ -27,7 +28,7 @@ JanSahay is a Next.js platform for citizen grievances and public-service account
    npm run db:migrate
    ```
 
-7. Deploy from the Vercel dashboard or push to your configured production branch.
+8. Deploy from the Vercel dashboard or push to your configured production branch.
 
 The migration creates all 25 service categories. The large demo seed adds provisional PIN/category routing rules. Import an approved responsibility matrix before public launch.
 
@@ -73,7 +74,7 @@ Public reactions deliberately use two integer counters on each complaint, not a 
 
 Exact latitude/longitude is stored privately to route and investigate a case. A separate, rounded ~1 km area cell is used in public aggregate views. Cells with fewer than five reports are suppressed. Do not publish exact coordinates, attachments, identity details, or low-volume cells.
 
-The optional map picker uses public OpenStreetMap tiles and needs no API key. For high-volume production use, select a tile provider and usage plan that matches expected traffic rather than relying on the community tile service at scale.
+The optional map picker uses Mappls (MapmyIndia) and its integrated place/PIN search. The static browser key is intentionally exposed to the Mappls SDK, so restrict that key to the project’s domains in the Mappls Console. Never put the Mappls client secret in a `NEXT_PUBLIC_` variable.
 
 ## Before a public launch
 

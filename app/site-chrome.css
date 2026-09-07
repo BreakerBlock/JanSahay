@@ -32,7 +32,7 @@
 .slogan-ticker {
   overflow: hidden;
   border-bottom: 1px solid #d6e4eb;
-  background: linear-gradient(90deg, #ff9933 0 33.333%, #ffffff 33.333% 66.666%, #138808 66.666% 100%);
+  background: linear-gradient(90deg, #fff0e2 0 33.333%, #ffffff 33.333% 66.666%, #e8f6eb 66.666% 100%);
   color: #082e49;
   text-shadow: 0 1px 0 rgba(255, 255, 255, .82);
   white-space: nowrap;
