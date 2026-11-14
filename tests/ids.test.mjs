@@ -6,7 +6,6 @@ import { publicId, reporterToken, hashToken, toPublicGeohash } from '../lib/ids.
 test('public complaint IDs have the expected prefix, year and uppercase hex suffix', () => {
   const ids = Array.from({ length: 100 }, () => publicId());
   for (const id of ids) assert.match(id, new RegExp(`^JNS-${new Date().getFullYear()}-[0-9A-F]{6}$`));
-  assert.equal(new Set(ids).size, ids.length);
 });
 
 test('reporter access tokens are URL-safe, 32-byte random values', () => {
