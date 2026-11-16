@@ -1,0 +1,46 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { publicId, reporterToken, hashToken, toPublicGeohash } from '../lib/ids.ts';
+
+test('public complaint IDs have the expected prefix, year and uppercase hex suffix', () => {
+  const ids = Array.from({ length: 100 }, () => publicId());
+  for (const id of ids) assert.match(id, new RegExp(`^JNS-${new Date().getFullYear()}-[0-9A-F]{6}$`));
+});
+
+test('reporter access tokens are URL-safe, 32-byte random values', () => {
+  const tokens = Array.from({ length: 100 }, () => reporterToken());
+  for (const token of tokens) {
+    assert.match(token, /^[A-Za-z0-9_-]{43}$/);
+    assert.equal(Buffer.from(token, 'base64url').length, 32);
+  }
+  assert.equal(new Set(tokens).size, tokens.length);
+});
+
+test('reporter tokens are SHA-256 hashed before storage', () => {
+  const token = 'test-token-not-a-secret';
+  assert.equal(hashToken(token), createHash('sha256').update(token).digest('hex'));
+  assert.notEqual(hashToken(token), token);
+});
+
+test('public location helper rounds coordinates and rejects missing or non-finite inputs', () => {
+  assert.equal(toPublicGeohash(28.6139, 77.2090), '28.61:77.21');
+  assert.equal(toPublicGeohash(0, 0), '0:0');
+  assert.equal(toPublicGeohash(), null);
+  assert.equal(toPublicGeohash(Number.NaN, 77), null);
+  assert.equal(toPublicGeohash(28, Infinity), null);
+});
+
+test('reporter token hashing is deterministic for Unicode and distinguishes case', () => {
+  const unicodeToken = 'नागरिक-टोकन-🔒';
+  assert.equal(hashToken(unicodeToken), createHash('sha256').update(unicodeToken, 'utf8').digest('hex'));
+  assert.notEqual(hashToken('Citizen'), hashToken('citizen'));
+  assert.match(hashToken(unicodeToken), /^[0-9a-f]{64}$/);
+});
+
+test('public location helper handles negative coordinates and decimal boundaries', () => {
+  assert.equal(toPublicGeohash(-28.6139, -77.209), '-28.61:-77.21');
+  assert.equal(toPublicGeohash(28.6149, 77.2049), '28.61:77.2');
+  assert.equal(toPublicGeohash(-0.001, 0.001), '0:0');
+  assert.equal(toPublicGeohash(-Infinity, 0), null);
+});
