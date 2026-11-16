@@ -30,3 +30,17 @@ test('public location helper rounds coordinates and rejects missing or non-finit
   assert.equal(toPublicGeohash(Number.NaN, 77), null);
   assert.equal(toPublicGeohash(28, Infinity), null);
 });
+
+test('reporter token hashing is deterministic for Unicode and distinguishes case', () => {
+  const unicodeToken = 'नागरिक-टोकन-🔒';
+  assert.equal(hashToken(unicodeToken), createHash('sha256').update(unicodeToken, 'utf8').digest('hex'));
+  assert.notEqual(hashToken('Citizen'), hashToken('citizen'));
+  assert.match(hashToken(unicodeToken), /^[0-9a-f]{64}$/);
+});
+
+test('public location helper handles negative coordinates and decimal boundaries', () => {
+  assert.equal(toPublicGeohash(-28.6139, -77.209), '-28.61:-77.21');
+  assert.equal(toPublicGeohash(28.6149, 77.2049), '28.61:77.2');
+  assert.equal(toPublicGeohash(-0.001, 0.001), '0:0');
+  assert.equal(toPublicGeohash(-Infinity, 0), null);
+});
