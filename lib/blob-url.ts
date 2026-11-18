@@ -12,7 +12,7 @@ export function isWellFormedComplaintBlobUrl(urlValue: unknown, pathname: unknow
     const parsed = new URL(urlValue);
     if (parsed.protocol !== 'https:' || parsed.username || parsed.password ||
         parsed.port || parsed.search || parsed.hash) return false;
-    if (!/^[a-z0-9-]+\\.(public|private)\\.blob\\.vercel-storage\\.com$/i.test(parsed.hostname)) return false;
+    if (!/^[a-z0-9-]+\.(public|private)\.blob\.vercel-storage\.com$/i.test(parsed.hostname)) return false;
     return parsed.pathname === '/' + pathname;
   } catch {
     return false;
