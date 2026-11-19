@@ -30,3 +30,21 @@ test('rejects mismatched paths, query strings, fragments and invalid input', () 
   assert.equal(isWellFormedComplaintBlobUrl(null, path), false);
   assert.equal(isWellFormedComplaintBlobUrl('not a url', path), false);
 });
+
+
+test('rejects alternate ports, embedded credentials and non-complaint prefixes', () => {
+  const host = 'abc123.private.blob.vercel-storage.com';
+  for (const url of [
+    'https://' + host + ':8443/' + path,
+    'https://user:password@' + host + '/' + path,
+    'https://' + host + '/unrelated/photo.webp',
+    'https://' + host + '/' + path + '?token=secret',
+  ]) assert.equal(isWellFormedComplaintBlobUrl(url, path), false, url);
+  assert.equal(isWellFormedComplaintBlobUrl(valid, 'other/submission-123/photo.webp'), false);
+});
+
+test('rejects invalid path values and backslash ambiguity', () => {
+  for (const badPath of [null, 42, '', 'complaints/', 'complaints\\\\submission-123/photo.webp', 'complaints/submission-123/photo.webp?x=1', 'complaints/submission-123/photo.webp#fragment']) {
+    assert.equal(isWellFormedComplaintBlobUrl(valid, badPath), false, String(badPath));
+  }
+});
