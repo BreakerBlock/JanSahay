@@ -48,3 +48,14 @@ test('rejects invalid path values and backslash ambiguity', () => {
     assert.equal(isWellFormedComplaintBlobUrl(valid, badPath), false, String(badPath));
   }
 });
+
+test('rejects URL path normalization and encoded separators', () => {
+  for (const badPath of [
+    'complaints/../secret/photo.webp',
+    'complaints/%2e%2e/secret/photo.webp',
+    'complaints/submission-123%2fphoto.webp',
+    'complaints/submission-123/%5cphoto.webp',
+  ]) {
+    assert.equal(isWellFormedComplaintBlobUrl(valid, badPath), false, badPath);
+  }
+});
