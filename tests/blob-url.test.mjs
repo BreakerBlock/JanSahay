@@ -59,3 +59,15 @@ test('rejects URL path normalization and encoded separators', () => {
     assert.equal(isWellFormedComplaintBlobUrl(valid, badPath), false, badPath);
   }
 });
+
+test('rejects matching encoded separator and dot-segment pathnames', () => {
+  for (const suspicious of [
+    'complaints/submission-123%2fphoto.webp',
+    'complaints/submission-123/%5cphoto.webp',
+    'complaints/%2e%2e/photo.webp',
+    'complaints/submission-123/./photo.webp',
+  ]) {
+    const url = 'https://abc123.private.blob.vercel-storage.com/' + suspicious;
+    assert.equal(isWellFormedComplaintBlobUrl(url, suspicious), false, suspicious);
+  }
+});
