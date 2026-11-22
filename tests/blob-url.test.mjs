@@ -71,3 +71,14 @@ test('rejects matching encoded separator and dot-segment pathnames', () => {
     assert.equal(isWellFormedComplaintBlobUrl(url, suspicious), false, suspicious);
   }
 });
+
+test('rejects double-encoded separators and dot segments even when URL and pathname match', () => {
+  for (const suspicious of [
+    'complaints/submission-123%252fphoto.webp',
+    'complaints/submission-123/%255cphoto.webp',
+    'complaints/%252e%252e/photo.webp',
+  ]) {
+    const url = 'https://abc123.private.blob.vercel-storage.com/' + suspicious;
+    assert.equal(isWellFormedComplaintBlobUrl(url, suspicious), false, suspicious);
+  }
+});
